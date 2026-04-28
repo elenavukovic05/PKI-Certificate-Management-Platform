@@ -7,7 +7,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.nio.file.FileStore;
 import java.util.Collection;
 import java.util.List;
 
@@ -21,8 +20,8 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "username")
-    private String username;
+    @Column(name = "username", nullable = false, unique = true)
+    private String username;    // mail
 
     @JsonIgnore
     @Column(name = "password")
@@ -34,8 +33,16 @@ public class User implements UserDetails {
     @Column(name = "last_name")
     private String lastName;
 
+    @Column(nullable = false)
+    private byte[] publicKey;
+
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Role role;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "organization_id")
+    private Organization organization; // for admin null
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities()
@@ -48,7 +55,6 @@ public class User implements UserDetails {
         return password;
     }
 
-    @Override
     public String getUsername() {
         return username;
     }
