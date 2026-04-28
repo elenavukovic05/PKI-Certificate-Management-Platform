@@ -13,6 +13,7 @@ import pki_project.pki.model.Subject;
 import pki_project.pki.model.enums.CertificateStatus;
 import pki_project.pki.model.enums.CertificateType;
 import pki_project.pki.repositories.CertificateRepository;
+import pki_project.pki.repositories.OrganizationRepository;
 
 import java.math.BigInteger;
 import java.security.*;
@@ -32,6 +33,9 @@ public class CertificateService {
 
     @Autowired
     KeyManagementService keyManagementService;
+
+    @Autowired
+    OrganizationRepository organizationRepository;
 
     public void createCertificate(CertificateRequestDTO certificateRequest) {
         Subject subject = generateSubject(certificateRequest);
@@ -56,7 +60,8 @@ public class CertificateService {
             issuer = buildIssuerFromEntity(issuerEntity, organization);
         }
         else{
-            organization = certificateRequest.getOrganization();
+            organization = organizationRepository.findById(certificateRequest.getOrganizationId())
+            .orElseThrow(() -> new RuntimeException("organization not found for root certificate"));
             issuer = new Issuer(subject.getPrivateKey(), subject.getX500Name());
         }
 
@@ -95,12 +100,15 @@ public class CertificateService {
             java.util.Base64.getEncoder().encodeToString(subject.getPublicKey().getEncoded())
         );
         certificateEntity.setIssuerName(issuer.getX500Name().toString());
-        certificateEntity.setIssuerPublicKey(
-            java.util.Base64.getEncoder().encodeToString(issuer.getPrivateKey() != null ? 
-                // za issuer koji nije root, koristi public key iz issuer entiteta
-                issuerEntity.getIssuerPublicKey().getBytes() : 
-                subject.getPublicKey().getEncoded())
-        );
+        if (issuerEntity != null) {
+            certificateEntity.setIssuerPublicKey(issuerEntity.getIssuerPublicKey());
+        } else {
+            // for root , issuer public key je = subject public key
+            certificateEntity.setIssuerPublicKey(
+                java.util.Base64.getEncoder().encodeToString(subject.getPublicKey().getEncoded())
+            );
+        }
+        certificateEntity.setOrganization(organization);
         // ##############################
         
         certificateRepository.save(certificateEntity);
@@ -183,7 +191,7 @@ public class CertificateService {
         builder.addRDN(BCStyle.CN, certificateRequest.getCommonName() );
         builder.addRDN(BCStyle.SURNAME, certificateRequest.getLastName());
         builder.addRDN(BCStyle.GIVENNAME, certificateRequest.getName());
-        builder.addRDN(BCStyle.O, certificateRequest.getOrganization().getName());
+        builder.addRDN(BCStyle.O, certificateRequest.getOrganization());
         builder.addRDN(BCStyle.OU, certificateRequest.getOrganizationalUnit());
         builder.addRDN(BCStyle.C, certificateRequest.getCountry());
         builder.addRDN(BCStyle.E, certificateRequest.getEmail());
