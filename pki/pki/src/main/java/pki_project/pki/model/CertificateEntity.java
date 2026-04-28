@@ -16,26 +16,22 @@ public class CertificateEntity {
     @Column(nullable = false, unique = true)
     private String serialNumber;
 
-    // === SUBJECT podaci (denormalizovani) ===
     @Column(nullable = false, length = 1000)
-    private String subjectName;  // X500Name.toString()
+    private String subjectName;
 
     @Column(nullable = false, columnDefinition = "TEXT")
-    private String subjectPublicKey; // Base64 enkodovan
+    private String subjectPublicKey;
 
-    // === ISSUER podaci (denormalizovani) ===
     @Column(nullable = false, length = 1000)
-    private String issuerName;   // X500Name.toString()
+    private String issuerName;
 
     @Column(nullable = false, columnDefinition = "TEXT")
-    private String issuerPublicKey;  // Base64 enkodovan
+    private String issuerPublicKey;
 
-    // === SERTIFIKAT IZDAVALAC (referenca na CertificateEntity koji je potpisao ovaj) ===
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "issuer_certificate_id")
     private CertificateEntity issuerCertificate;
 
-    // === TIP I STATUS ===
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private CertificateType type;
@@ -44,31 +40,28 @@ public class CertificateEntity {
     @Column(nullable = false)
     private CertificateStatus status = CertificateStatus.VALID;
 
-    // === DATUMI ===
     @Column(nullable = false)
     private Date startDate;
 
     @Column(nullable = false)
     private Date endDate;
 
-    // === EKSTENZIJE ===
+    // === extentions ===
     boolean isCA;
     boolean digitalSignature;
     boolean keyEncipherment;
     boolean keyCertSign;
     boolean crlSign;
 
-    // === PODACI SERTIFIKATA ===
     @Column(nullable = false, columnDefinition = "TEXT")
-    private String certificatePem;  // ceo sertifikat u PEM formatu
+    private String certificatePem;
 
     @Column(columnDefinition = "TEXT")
-    private String encryptedPrivateKey;  // AES/GCM enkriptovan, Base64
+    private String encryptedPrivateKey;
 
-    // === VLASNIŠTVO ===
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id")
-    private User owner;  // za EE sertifikate
+    private User owner;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organization_id")
@@ -78,10 +71,8 @@ public class CertificateEntity {
     @JoinColumn(name = "created_by")
     private User createdBy;
 
-    // === POVLAČENJE ===
     private String revocationReason;
 
-    // === KONSTRUKTORI ===
     public CertificateEntity() {
     }
 
@@ -106,7 +97,6 @@ public class CertificateEntity {
         this.status = CertificateStatus.VALID;
     }
 
-    // === GETTERI I SETTERI ===
     public Long getId() {
         return id;
     }

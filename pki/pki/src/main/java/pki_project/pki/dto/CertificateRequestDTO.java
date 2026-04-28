@@ -1,5 +1,6 @@
 package pki_project.pki.dto;
 
+import pki_project.pki.model.Organization;
 import pki_project.pki.model.enums.CertificateType;
 
 import java.util.Date;
@@ -8,7 +9,7 @@ public class CertificateRequestDTO {
     String commonName;
     String name;
     String lastName;
-    String organization;
+    Organization organization;
     String email;
     String organizationalUnit;
     String country;
@@ -22,7 +23,7 @@ public class CertificateRequestDTO {
     boolean crlSign;
     private CertificateType type;
 
-    public CertificateRequestDTO(String commonName, String name, String lastName, String organization,
+    public CertificateRequestDTO(String commonName, String name, String lastName, Organization organization,
                                  String email, String organizationalUnit, String country, Date startDate,
                                  Date endDate, Long issuerId, boolean isCA, boolean digitalSignature,
                                  boolean keyEncipherment, boolean keyCertSign, boolean crlSign, CertificateType type) {
@@ -68,11 +69,11 @@ public class CertificateRequestDTO {
         this.lastName = lastName;
     }
 
-    public String getOrganization() {
+    public Organization getOrganization() {
         return organization;
     }
 
-    public void setOrganization(String organization) {
+    public void setOrganization(Organization organization) {
         this.organization = organization;
     }
 

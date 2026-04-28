@@ -18,7 +18,32 @@ public class Organization {
     @Column(nullable = false, unique = true)
     private String name;
 
-    // Organizacioni AES-256 ključ, enkriptovan master ključem (čuva se u env varijabli)
-    @Column(nullable = false)
-    private byte[] encryptedOrgKey;
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String encryptedOrgKey;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getEncryptedOrgKey() {
+        return encryptedOrgKey;
+    }
+
+    public void setEncryptedOrgKey(String encryptedOrgKey) {
+        this.encryptedOrgKey = encryptedOrgKey;
+    }
+
+    
 }
