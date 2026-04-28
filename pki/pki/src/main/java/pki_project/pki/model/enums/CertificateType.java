@@ -1,7 +1,7 @@
-package pki_project.pki.model;
+package pki_project.pki.model.enums;
 
 public enum CertificateType {
-    ROOT_CA,
-    INTERMEDIATE_CA,
+    ROOT,
+    INTERMEDIATE,
     END_ENTITY
 }

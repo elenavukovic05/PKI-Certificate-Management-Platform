@@ -16,21 +16,21 @@ public class CertificateEntity {
     @Column(nullable = false, unique = true)
     private String serialNumber;
 
-    // === SUBJECT podaci (denormalizovani iz Subject klase) ===
-    @Column(nullable = false)
-    private String subjectX500Name;  // X500Name.toString()
+    // === SUBJECT podaci (denormalizovani) ===
+    @Column(nullable = false, length = 1000)
+    private String subjectName;  // X500Name.toString()
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String subjectPublicKey; // Base64 enkodovan
 
-    // === ISSUER podaci (denormalizovani iz Issuer klase) ===
-    @Column(nullable = false)
-    private String issuerX500Name;   // X500Name.toString()
-    
+    // === ISSUER podaci (denormalizovani) ===
+    @Column(nullable = false, length = 1000)
+    private String issuerName;   // X500Name.toString()
+
     @Column(nullable = false, columnDefinition = "TEXT")
     private String issuerPublicKey;  // Base64 enkodovan
 
-    // === SERTIFIKAT IZDAVALAC (referenca na drugi CertificateEntity) ===
+    // === SERTIFIKAT IZDAVALAC (referenca na CertificateEntity koji je potpisao ovaj) ===
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "issuer_certificate_id")
     private CertificateEntity issuerCertificate;
@@ -52,11 +52,11 @@ public class CertificateEntity {
     private Date endDate;
 
     // === EKSTENZIJE ===
-    private boolean isCA;
-    private boolean digitalSignature;
-    private boolean keyEncipherment;
-    private boolean keyCertSign;
-    private boolean crlSign;
+    boolean isCA;
+    boolean digitalSignature;
+    boolean keyEncipherment;
+    boolean keyCertSign;
+    boolean crlSign;
 
     // === PODACI SERTIFIKATA ===
     @Column(nullable = false, columnDefinition = "TEXT")
@@ -81,8 +81,32 @@ public class CertificateEntity {
     // === POVLAČENJE ===
     private String revocationReason;
 
-    public CertificateEntity() {}
+    // === KONSTRUKTORI ===
+    public CertificateEntity() {
+    }
 
+    public CertificateEntity(String serialNumber, String subjectName,
+                             CertificateEntity issuerCertificate, CertificateType type, Date startDate,
+                             Date endDate, boolean isCA, boolean digitalSignature,
+                             boolean keyEncipherment, boolean keyCertSign, boolean crlSign,
+                             String certificatePem, String encryptedPrivateKey) {
+        this.serialNumber = serialNumber;
+        this.subjectName = subjectName;
+        this.issuerCertificate = issuerCertificate;
+        this.type = type;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.isCA = isCA;
+        this.digitalSignature = digitalSignature;
+        this.keyEncipherment = keyEncipherment;
+        this.keyCertSign = keyCertSign;
+        this.crlSign = crlSign;
+        this.certificatePem = certificatePem;
+        this.encryptedPrivateKey = encryptedPrivateKey;
+        this.status = CertificateStatus.VALID;
+    }
+
+    // === GETTERI I SETTERI ===
     public Long getId() {
         return id;
     }
@@ -99,12 +123,12 @@ public class CertificateEntity {
         this.serialNumber = serialNumber;
     }
 
-    public String getSubjectX500Name() {
-        return subjectX500Name;
+    public String getSubjectName() {
+        return subjectName;
     }
 
-    public void setSubjectX500Name(String subjectX500Name) {
-        this.subjectX500Name = subjectX500Name;
+    public void setSubjectName(String subjectName) {
+        this.subjectName = subjectName;
     }
 
     public String getSubjectPublicKey() {
@@ -115,12 +139,12 @@ public class CertificateEntity {
         this.subjectPublicKey = subjectPublicKey;
     }
 
-    public String getIssuerX500Name() {
-        return issuerX500Name;
+    public String getIssuerName() {
+        return issuerName;
     }
 
-    public void setIssuerX500Name(String issuerX500Name) {
-        this.issuerX500Name = issuerX500Name;
+    public void setIssuerName(String issuerName) {
+        this.issuerName = issuerName;
     }
 
     public String getIssuerPublicKey() {
@@ -171,6 +195,46 @@ public class CertificateEntity {
         this.endDate = endDate;
     }
 
+    public boolean isCA() {
+        return isCA;
+    }
+
+    public void setCA(boolean CA) {
+        isCA = CA;
+    }
+
+    public boolean isDigitalSignature() {
+        return digitalSignature;
+    }
+
+    public void setDigitalSignature(boolean digitalSignature) {
+        this.digitalSignature = digitalSignature;
+    }
+
+    public boolean isKeyEncipherment() {
+        return keyEncipherment;
+    }
+
+    public void setKeyEncipherment(boolean keyEncipherment) {
+        this.keyEncipherment = keyEncipherment;
+    }
+
+    public boolean isKeyCertSign() {
+        return keyCertSign;
+    }
+
+    public void setKeyCertSign(boolean keyCertSign) {
+        this.keyCertSign = keyCertSign;
+    }
+
+    public boolean isCrlSign() {
+        return crlSign;
+    }
+
+    public void setCrlSign(boolean crlSign) {
+        this.crlSign = crlSign;
+    }
+
     public String getCertificatePem() {
         return certificatePem;
     }
@@ -218,6 +282,4 @@ public class CertificateEntity {
     public void setRevocationReason(String revocationReason) {
         this.revocationReason = revocationReason;
     }
-
-    
 }

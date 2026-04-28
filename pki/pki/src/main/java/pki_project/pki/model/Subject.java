@@ -5,6 +5,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 
 public class Subject {
+
     private PublicKey publicKey;
     private PrivateKey privateKey;
     private X500Name x500Name;
