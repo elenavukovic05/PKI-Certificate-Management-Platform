@@ -3,12 +3,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import pki_project.pki.dto.CertificatePreviewDTO;
 import pki_project.pki.dto.CertificateRequestDTO;
+import pki_project.pki.model.CertificateEntity;
 import pki_project.pki.services.CertificateService;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("api/v1/certificates")
@@ -27,4 +28,10 @@ public class CertificateController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+    @GetMapping(value = "/all")
+    public List<CertificatePreviewDTO> getAllCertificates(){
+        return certificateService.getAllCertificates();
+    }
+
+
 }
