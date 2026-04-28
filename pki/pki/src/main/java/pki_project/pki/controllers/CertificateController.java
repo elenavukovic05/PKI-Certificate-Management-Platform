@@ -28,9 +28,9 @@ public class CertificateController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-    @GetMapping(value = "/all")
-    public List<CertificatePreviewDTO> getAllCertificates(){
-        return certificateService.getAllCertificates();
+    @GetMapping("/all")
+    public ResponseEntity<List<CertificatePreviewDTO>> getAllCertificates(){
+        return ResponseEntity.ok(certificateService.getAllCertificates());
     }
 
 

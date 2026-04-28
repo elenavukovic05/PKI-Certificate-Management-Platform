@@ -6,6 +6,7 @@ import pki_project.pki.model.enums.CertificateType;
 import java.util.Date;
 
 public class CertificatePreviewDTO {
+    private Long id;
     private String subjectName;
     private String issuerName;
     private CertificateType type;
@@ -18,7 +19,8 @@ public class CertificatePreviewDTO {
     boolean keyCertSign;
     boolean crlSign;
 
-    public CertificatePreviewDTO(String subjectName, String issuerName, CertificateType type, CertificateStatus status, Date startDate, Date endDate, boolean isCA, boolean digitalSignature, boolean keyEncipherment, boolean keyCertSign, boolean crlSign) {
+    public CertificatePreviewDTO(Long id,String subjectName, String issuerName, CertificateType type, CertificateStatus status, Date startDate, Date endDate, boolean isCA, boolean digitalSignature, boolean keyEncipherment, boolean keyCertSign, boolean crlSign) {
+        this.id = id;
         this.subjectName = subjectName;
         this.issuerName = issuerName;
         this.type = type;
@@ -30,6 +32,14 @@ public class CertificatePreviewDTO {
         this.keyEncipherment = keyEncipherment;
         this.keyCertSign = keyCertSign;
         this.crlSign = crlSign;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getSubjectName() {

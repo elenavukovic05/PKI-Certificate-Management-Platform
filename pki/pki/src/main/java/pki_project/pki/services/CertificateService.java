@@ -219,7 +219,7 @@ public class CertificateService {
         List<CertificateEntity> certificates = certificateRepository.findAll();
         List<CertificatePreviewDTO> dto = new ArrayList<>();
         for (var certificate : certificates){
-            dto.add(new CertificatePreviewDTO(certificate.getSubjectName(),certificate.getIssuerName(),
+            dto.add(new CertificatePreviewDTO(certificate.getId(), certificate.getSubjectName(),certificate.getIssuerName(),
                     certificate.getType(), certificate.getStatus(), certificate.getStartDate(), certificate.getEndDate(),
                     certificate.isCA(), certificate.isDigitalSignature(), certificate.isKeyEncipherment(),
                     certificate.isKeyCertSign(), certificate.isCrlSign()));
