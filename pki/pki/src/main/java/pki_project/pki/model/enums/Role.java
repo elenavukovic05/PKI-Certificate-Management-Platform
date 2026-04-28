@@ -1,4 +1,4 @@
-package pki_project.pki.model;
+package pki_project.pki.model.enums;
 
 public enum Role {
     ADMIN,

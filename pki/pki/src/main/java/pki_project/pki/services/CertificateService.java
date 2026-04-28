@@ -72,15 +72,8 @@ public class CertificateService {
         BigInteger serialNumber = new BigInteger(64, random);
         X509Certificate x509Certificate = certificateGenerator.generateCertificate(subject,issuer,certificateRequest,
                 serialNumber);
-
-        /*Certificate certificate = new Certificate(subject, issuer, serialNumber.toString(),
-                certificateRequest.getStartDate(), certificateRequest.getEndDate(),x509Certificate );*/
-
         String encryptedPrivateKey = keyManagementService.encryptPrivateKey(subject.getPrivateKey(), organization);
         String subjectName = subject.getX500Name().toString();
-        /*if (certificateRequest.getType() == CertificateType.ROOT){
-            issuerEntity = null;
-        }*/
         String pem = certificateToPem(x509Certificate);
         // ###################
         CertificateEntity certificateEntity = new CertificateEntity(
@@ -222,7 +215,7 @@ public class CertificateService {
             dto.add(new CertificatePreviewDTO(certificate.getId(), certificate.getSubjectName(),certificate.getIssuerName(),
                     certificate.getType(), certificate.getStatus(), certificate.getStartDate(), certificate.getEndDate(),
                     certificate.isCA(), certificate.isDigitalSignature(), certificate.isKeyEncipherment(),
-                    certificate.isKeyCertSign(), certificate.isCrlSign()));
+                    certificate.isKeyCertSign(), certificate.isCrlSign(), certificate.getOrganization().getName()));
         }
         return dto;
     }
