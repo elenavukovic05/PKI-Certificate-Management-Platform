@@ -10,6 +10,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import pki_project.pki.config.SecurityConfig;
 
 import java.io.IOException;
 import java.util.List;
@@ -31,37 +32,49 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String authHeader = request.getHeader("Authorization");
 
-        // ako nema authHeader propusti dalje, jer npr login zahtjevi nece imati token
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
 
         // uklanjam "Bearer " sa pocetka
         String token = authHeader.substring(7);
 
-        String username = jwtUtil.extractUsername(token);
+        try{
+            String username = jwtUtil.extractUsername(token);
 
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            if (jwtUtil.isTokenValid(token, username)) {
-                String role = jwtUtil.extractRole(token);
+                if (jwtUtil.isTokenValid(token, username)) {
+                    String role = jwtUtil.extractRole(token);
 
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(
-                                username,
-                                null,
-                                List.of(new SimpleGrantedAuthority("ROLE_" + role))
-                        );
+                    UsernamePasswordAuthenticationToken authToken =
+                            new UsernamePasswordAuthenticationToken(
+                                    username,
+                                    null,
+                                    List.of(new SimpleGrantedAuthority("ROLE_" + role))
+                            );
 
-                authToken.setDetails(
-                        new WebAuthenticationDetailsSource().buildDetails(request)
-                );
+                    authToken.setDetails(
+                            new WebAuthenticationDetailsSource().buildDetails(request)
+                    );
 
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
             }
+        }catch (Exception e){
+            //token neispravan, istekao ili falsifikovan
+            SecurityContextHolder.clearContext();
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return;
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getServletPath();
+        return path.startsWith("/api/v1/auth/login");
     }
 }
