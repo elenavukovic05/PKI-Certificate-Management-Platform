@@ -31,5 +31,3 @@ build/
 
 ### VS Code ###
 .vscode/
-### Database settings###
- application-local.properties
