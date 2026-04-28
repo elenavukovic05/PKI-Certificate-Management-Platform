@@ -18,12 +18,10 @@ import pki_project.pki.model.Issuer;
 import pki_project.pki.model.Subject;
 
 import java.math.BigInteger;
-import java.security.SecureRandom;
 import java.security.Security;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.Date;
 
 @Component
 public class CertificateGenerator {

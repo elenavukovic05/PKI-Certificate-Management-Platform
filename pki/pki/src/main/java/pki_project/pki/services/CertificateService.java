@@ -8,9 +8,12 @@ import org.springframework.stereotype.Service;
 import pki_project.pki.dto.CertificateRequestDTO;
 import pki_project.pki.model.CertificateEntity;
 import pki_project.pki.model.Issuer;
+import pki_project.pki.model.Organization;
 import pki_project.pki.model.Subject;
+import pki_project.pki.model.enums.CertificateStatus;
 import pki_project.pki.model.enums.CertificateType;
 import pki_project.pki.repositories.CertificateRepository;
+import pki_project.pki.repositories.OrganizationRepository;
 
 import java.math.BigInteger;
 import java.security.*;
@@ -29,12 +32,16 @@ public class CertificateService {
     CertificateRepository certificateRepository;
 
     @Autowired
-    PrivateKeyEncryptionService privateKeyEncryptionService;
+    KeyManagementService keyManagementService;
+
+    @Autowired
+    OrganizationRepository organizationRepository;
 
     public void createCertificate(CertificateRequestDTO certificateRequest) {
         Subject subject = generateSubject(certificateRequest);
         Issuer issuer = null;
         CertificateEntity issuerEntity = null;
+        Organization organization = null;
         if(certificateRequest.getType() == CertificateType.INTERMEDIATE ||
                 certificateRequest.getType() == CertificateType.END_ENTITY){
             issuerEntity = certificateRepository
@@ -45,14 +52,17 @@ public class CertificateService {
             if(!isIssuerValid){
                 throw new RuntimeException("Issuer certificate is not valid");
             }
+            organization = issuerEntity.getOrganization();
+            if (organization == null) {
+                throw new RuntimeException("issuer certificate has no associated organization");
+            }
             //dekripcija privatnog kljuca izdavaoca
-            issuer = buildIssuerFromEntity(issuerEntity);
+            issuer = buildIssuerFromEntity(issuerEntity, organization);
         }
         else{
-            issuer = new Issuer(
-                    subject.getPrivateKey(),
-                    subject.getX500Name()
-            );
+            organization = organizationRepository.findById(certificateRequest.getOrganizationId())
+            .orElseThrow(() -> new RuntimeException("organization not found for root certificate"));
+            issuer = new Issuer(subject.getPrivateKey(), subject.getX500Name());
         }
 
         SecureRandom random = new SecureRandom();
@@ -63,17 +73,44 @@ public class CertificateService {
         /*Certificate certificate = new Certificate(subject, issuer, serialNumber.toString(),
                 certificateRequest.getStartDate(), certificateRequest.getEndDate(),x509Certificate );*/
 
-        String encryptedPrivateKey = privateKeyEncryptionService.encryptPrivateKey(subject.getPrivateKey());
+        String encryptedPrivateKey = keyManagementService.encryptPrivateKey(subject.getPrivateKey(), organization);
         String subjectName = subject.getX500Name().toString();
         /*if (certificateRequest.getType() == CertificateType.ROOT){
             issuerEntity = null;
         }*/
         String pem = certificateToPem(x509Certificate);
-        CertificateEntity certificateEntity = new CertificateEntity(serialNumber.toString(),subjectName,issuerEntity,
-                certificateRequest.getType(),certificateRequest.getStartDate(),certificateRequest.getEndDate(),
-                false,certificateRequest.isCA(),certificateRequest.isDigitalSignature(),
-                certificateRequest.isKeyEncipherment(), certificateRequest.isKeyCertSign(),
-                certificateRequest.isCrlSign(),pem,encryptedPrivateKey);
+        // ###################
+        CertificateEntity certificateEntity = new CertificateEntity(
+                serialNumber.toString(),
+                subjectName,
+                issuerEntity,
+                certificateRequest.getType(),
+                certificateRequest.getStartDate(),
+                certificateRequest.getEndDate(),
+                certificateRequest.isCA(),
+                certificateRequest.isDigitalSignature(),
+                certificateRequest.isKeyEncipherment(),
+                certificateRequest.isKeyCertSign(),
+                certificateRequest.isCrlSign(),
+                pem,
+                encryptedPrivateKey
+        );
+        
+        certificateEntity.setSubjectPublicKey(
+            java.util.Base64.getEncoder().encodeToString(subject.getPublicKey().getEncoded())
+        );
+        certificateEntity.setIssuerName(issuer.getX500Name().toString());
+        if (issuerEntity != null) {
+            certificateEntity.setIssuerPublicKey(issuerEntity.getIssuerPublicKey());
+        } else {
+            // for root , issuer public key je = subject public key
+            certificateEntity.setIssuerPublicKey(
+                java.util.Base64.getEncoder().encodeToString(subject.getPublicKey().getEncoded())
+            );
+        }
+        certificateEntity.setOrganization(organization);
+        // ##############################
+        
         certificateRepository.save(certificateEntity);
     }
     boolean validateIssuer(CertificateEntity issuer, CertificateRequestDTO certificateRequest){
@@ -86,7 +123,7 @@ public class CertificateService {
             }
             if (!issuer.isCA()) return false;
             if (!issuer.isKeyCertSign()) return false;
-            if(issuer.isRevoked())
+            if(issuer.getStatus() == CertificateStatus.REVOKED)
                 return false;
             boolean validDigitalSign = validateDigitalSign(issuer);
             if(!validDigitalSign)
@@ -103,7 +140,7 @@ public class CertificateService {
             issuerCertificate.verify(issuerCertificate.getPublicKey());
             return true;
         }else{
-            CertificateEntity parentCertificateEntity = issuer.getIssuer();
+            CertificateEntity parentCertificateEntity = issuer.getIssuerCertificate();
             if(parentCertificateEntity == null){
                 return false;
             }
@@ -143,8 +180,8 @@ public class CertificateService {
             throw new RuntimeException("Failed to parse certificate PEM", e);
         }
     }
-    public Issuer buildIssuerFromEntity(CertificateEntity issuerEntity){
-        PrivateKey issuerPrivateKey = privateKeyEncryptionService.decryptPrivateKey(issuerEntity.getEncryptedPrivateKeyPem());
+    public Issuer buildIssuerFromEntity(CertificateEntity issuerEntity, Organization organization){
+        PrivateKey issuerPrivateKey = keyManagementService.decryptPrivateKey(issuerEntity.getEncryptedPrivateKey(), organization);
         X500Name x500Name = new X500Name(issuerEntity.getSubjectName());
         return new Issuer(issuerPrivateKey, x500Name);
     }

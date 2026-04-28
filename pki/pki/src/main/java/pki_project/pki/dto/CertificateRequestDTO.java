@@ -20,12 +20,13 @@ public class CertificateRequestDTO {
     boolean keyEncipherment;
     boolean keyCertSign;
     boolean crlSign;
+    private Long organizationId;
     private CertificateType type;
 
     public CertificateRequestDTO(String commonName, String name, String lastName, String organization,
                                  String email, String organizationalUnit, String country, Date startDate,
                                  Date endDate, Long issuerId, boolean isCA, boolean digitalSignature,
-                                 boolean keyEncipherment, boolean keyCertSign, boolean crlSign, CertificateType type) {
+                                 boolean keyEncipherment, boolean keyCertSign, boolean crlSign, Long organizationId, CertificateType type) {
         this.commonName = commonName;
         this.name = name;
         this.lastName = lastName;
@@ -41,6 +42,7 @@ public class CertificateRequestDTO {
         this.keyEncipherment = keyEncipherment;
         this.keyCertSign = keyCertSign;
         this.crlSign = crlSign;
+        this.organizationId = organizationId;
         this.type = type;
     }
 
@@ -170,5 +172,13 @@ public class CertificateRequestDTO {
 
     public void setType(CertificateType type) {
         this.type = type;
+    }
+
+    public Long getOrganizationId() {
+        return organizationId;
+    }
+
+    public void setOrganizationId(Long organizationId) {
+        this.organizationId = organizationId;
     }
 }

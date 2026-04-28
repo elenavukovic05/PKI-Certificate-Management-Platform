@@ -1,13 +1,13 @@
 package pki_project.pki.model;
+
 import org.bouncycastle.asn1.x500.X500Name;
 import java.security.PrivateKey;
-
 
 public class Issuer {
     private PrivateKey privateKey;
     private X500Name x500Name;
 
-    public Issuer( PrivateKey privateKey, X500Name x500Name) {
+    public Issuer(PrivateKey privateKey, X500Name x500Name) {
         this.privateKey = privateKey;
         this.x500Name = x500Name;
     }

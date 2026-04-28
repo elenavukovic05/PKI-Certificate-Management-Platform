@@ -81,4 +81,33 @@ public class PrivateKeyEncryptionService {
             throw new RuntimeException("Failed to decrypt private key", e);
         }
     }
+
+    public String encryptData(byte[] data) {
+        try {
+            byte[] iv = new byte[IV_LENGTH];
+            new SecureRandom().nextBytes(iv);
+            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+            cipher.init(Cipher.ENCRYPT_MODE, masterKey, new GCMParameterSpec(TAG_LENGTH_BIT, iv));
+            byte[] encrypted = cipher.doFinal(data);
+            byte[] result = new byte[iv.length + encrypted.length];
+            System.arraycopy(iv, 0, result, 0, iv.length);
+            System.arraycopy(encrypted, 0, result, iv.length, encrypted.length);
+            return Base64.getEncoder().encodeToString(result);
+        } catch (Exception e) {
+            throw new RuntimeException("Encryption failed", e);
+        }
+    }
+
+    public byte[] decryptData(String base64Data) {
+        try {
+            byte[] allBytes = Base64.getDecoder().decode(base64Data);
+            byte[] iv = Arrays.copyOfRange(allBytes, 0, IV_LENGTH);
+            byte[] encrypted = Arrays.copyOfRange(allBytes, IV_LENGTH, allBytes.length);
+            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+            cipher.init(Cipher.DECRYPT_MODE, masterKey, new GCMParameterSpec(TAG_LENGTH_BIT, iv));
+            return cipher.doFinal(encrypted);
+        } catch (Exception e) {
+            throw new RuntimeException("Decryption failed", e);
+        }
+    }
 }

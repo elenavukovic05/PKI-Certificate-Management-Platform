@@ -1,6 +1,7 @@
 package pki_project.pki.model;
 
 import jakarta.persistence.*;
+import pki_project.pki.model.enums.CertificateStatus;
 import pki_project.pki.model.enums.CertificateType;
 
 import java.util.Date;
@@ -11,51 +12,89 @@ public class CertificateEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false, unique = true)
     private String serialNumber;
+
     @Column(nullable = false, length = 1000)
     private String subjectName;
-    @ManyToOne
-    @JoinColumn(name = "issuer_id")
-    private CertificateEntity issuer;
+
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String subjectPublicKey;
+
+    @Column(nullable = false, length = 1000)
+    private String issuerName;
+
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String issuerPublicKey;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "issuer_certificate_id")
+    private CertificateEntity issuerCertificate;
+
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private CertificateType type;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private CertificateStatus status = CertificateStatus.VALID;
+
+    @Column(nullable = false)
     private Date startDate;
+
+    @Column(nullable = false)
     private Date endDate;
-    private boolean isRevoked;
+
+    // === extentions ===
     boolean isCA;
     boolean digitalSignature;
     boolean keyEncipherment;
     boolean keyCertSign;
     boolean crlSign;
+
     @Column(nullable = false, columnDefinition = "TEXT")
     private String certificatePem;
 
     @Column(columnDefinition = "TEXT")
-    private String encryptedPrivateKeyPem;
+    private String encryptedPrivateKey;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id")
+    private User owner;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "organization_id")
+    private Organization organization;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by")
+    private User createdBy;
+
+    private String revocationReason;
 
     public CertificateEntity() {
     }
 
     public CertificateEntity(String serialNumber, String subjectName,
-                             CertificateEntity issuer, CertificateType type, Date startDate,
-                             Date endDate, boolean isRevoked, boolean isCA, boolean digitalSignature,
-                             boolean keyEncipherment, boolean keyCertSign, boolean crlSign, String certificatePem,
-                             String encryptedPrivateKeyPem) {
-
+                             CertificateEntity issuerCertificate, CertificateType type, Date startDate,
+                             Date endDate, boolean isCA, boolean digitalSignature,
+                             boolean keyEncipherment, boolean keyCertSign, boolean crlSign,
+                             String certificatePem, String encryptedPrivateKey) {
         this.serialNumber = serialNumber;
         this.subjectName = subjectName;
-        this.issuer = issuer;
+        this.issuerCertificate = issuerCertificate;
         this.type = type;
         this.startDate = startDate;
         this.endDate = endDate;
-        this.isRevoked = isRevoked;
         this.isCA = isCA;
         this.digitalSignature = digitalSignature;
         this.keyEncipherment = keyEncipherment;
         this.keyCertSign = keyCertSign;
         this.crlSign = crlSign;
         this.certificatePem = certificatePem;
-        this.encryptedPrivateKeyPem = encryptedPrivateKeyPem;
+        this.encryptedPrivateKey = encryptedPrivateKey;
+        this.status = CertificateStatus.VALID;
     }
 
     public Long getId() {
@@ -82,12 +121,36 @@ public class CertificateEntity {
         this.subjectName = subjectName;
     }
 
-    public CertificateEntity getIssuer() {
-        return issuer;
+    public String getSubjectPublicKey() {
+        return subjectPublicKey;
     }
 
-    public void setIssuer(CertificateEntity issuer) {
-        this.issuer = issuer;
+    public void setSubjectPublicKey(String subjectPublicKey) {
+        this.subjectPublicKey = subjectPublicKey;
+    }
+
+    public String getIssuerName() {
+        return issuerName;
+    }
+
+    public void setIssuerName(String issuerName) {
+        this.issuerName = issuerName;
+    }
+
+    public String getIssuerPublicKey() {
+        return issuerPublicKey;
+    }
+
+    public void setIssuerPublicKey(String issuerPublicKey) {
+        this.issuerPublicKey = issuerPublicKey;
+    }
+
+    public CertificateEntity getIssuerCertificate() {
+        return issuerCertificate;
+    }
+
+    public void setIssuerCertificate(CertificateEntity issuerCertificate) {
+        this.issuerCertificate = issuerCertificate;
     }
 
     public CertificateType getType() {
@@ -96,6 +159,14 @@ public class CertificateEntity {
 
     public void setType(CertificateType type) {
         this.type = type;
+    }
+
+    public CertificateStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(CertificateStatus status) {
+        this.status = status;
     }
 
     public Date getStartDate() {
@@ -112,14 +183,6 @@ public class CertificateEntity {
 
     public void setEndDate(Date endDate) {
         this.endDate = endDate;
-    }
-
-    public boolean isRevoked() {
-        return isRevoked;
-    }
-
-    public void setRevoked(boolean revoked) {
-        isRevoked = revoked;
     }
 
     public boolean isCA() {
@@ -170,11 +233,43 @@ public class CertificateEntity {
         this.certificatePem = certificatePem;
     }
 
-    public String getEncryptedPrivateKeyPem() {
-        return encryptedPrivateKeyPem;
+    public String getEncryptedPrivateKey() {
+        return encryptedPrivateKey;
     }
 
-    public void setEncryptedPrivateKeyPem(String encryptedPrivateKeyPem) {
-        this.encryptedPrivateKeyPem = encryptedPrivateKeyPem;
+    public void setEncryptedPrivateKey(String encryptedPrivateKey) {
+        this.encryptedPrivateKey = encryptedPrivateKey;
+    }
+
+    public User getOwner() {
+        return owner;
+    }
+
+    public void setOwner(User owner) {
+        this.owner = owner;
+    }
+
+    public Organization getOrganization() {
+        return organization;
+    }
+
+    public void setOrganization(Organization organization) {
+        this.organization = organization;
+    }
+
+    public User getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(User createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public String getRevocationReason() {
+        return revocationReason;
+    }
+
+    public void setRevocationReason(String revocationReason) {
+        this.revocationReason = revocationReason;
     }
 }

@@ -1,4 +1,5 @@
 package pki_project.pki.model;
+
 import org.bouncycastle.asn1.x500.X500Name;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -9,7 +10,7 @@ public class Subject {
     private PrivateKey privateKey;
     private X500Name x500Name;
 
-    public Subject(PublicKey publicKey,PrivateKey privateKey, X500Name x500Name) {
+    public Subject(PublicKey publicKey, PrivateKey privateKey, X500Name x500Name) {
         this.publicKey = publicKey;
         this.privateKey = privateKey;
         this.x500Name = x500Name;
