@@ -21,10 +21,4 @@ public class OrganizationController {
     public ResponseEntity<List<OrganizationDTO>> getAllOrganizations(){
         return ResponseEntity.ok(organizationService.getAllOrganizations());
     }
-
-    @PostMapping("/create")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<OrganizationDTO> createOrganization(@RequestParam String name) {
-        return ResponseEntity.ok(organizationService.createOrganization(name));
-    }
 }

@@ -27,16 +27,4 @@ public class OrganizationService {
         }
         return dto;
     }
-
-    public OrganizationDTO createOrganization(String name) {
-        SecretKey orgKey = keyManagementService.generateOrganizationKey();
-        String encryptedOrgKey = keyManagementService.encryptOrganizationKey(orgKey);
-
-        Organization organization = new Organization();
-        organization.setName(name);
-        organization.setEncryptedOrgKey(encryptedOrgKey);
-
-        Organization saved = organizationRepository.save(organization);
-        return new OrganizationDTO(saved.getId(), saved.getName());
-    }
 }
