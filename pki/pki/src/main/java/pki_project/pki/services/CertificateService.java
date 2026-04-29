@@ -80,8 +80,15 @@ public class CertificateService {
         BigInteger serialNumber = new BigInteger(64, random);
         X509Certificate x509Certificate = certificateGenerator.generateCertificate(subject,issuer,certificateRequest,
                 serialNumber);
+
+        /*Certificate certificate = new Certificate(subject, issuer, serialNumber.toString(),
+                certificateRequest.getStartDate(), certificateRequest.getEndDate(),x509Certificate );*/
+
         String encryptedPrivateKey = keyManagementService.encryptPrivateKey(subject.getPrivateKey(), organization);
         String subjectName = subject.getX500Name().toString();
+        /*if (certificateRequest.getType() == CertificateType.ROOT){
+            issuerEntity = null;
+        }*/
         String pem = certificateToPem(x509Certificate);
         // ###################
         CertificateEntity certificateEntity = new CertificateEntity(
@@ -225,17 +232,6 @@ public class CertificateService {
         return null;
     }
 
-    public List<CertificatePreviewDTO> getAllCertificates(){
-        List<CertificateEntity> certificates = certificateRepository.findAll();
-        List<CertificatePreviewDTO> dto = new ArrayList<>();
-        for (var certificate : certificates){
-            dto.add(new CertificatePreviewDTO(certificate.getId(), certificate.getSubjectName(),certificate.getIssuerName(),
-                    certificate.getType(), certificate.getStatus(), certificate.getStartDate(), certificate.getEndDate(),
-                    certificate.isCA(), certificate.isDigitalSignature(), certificate.isKeyEncipherment(),
-                    certificate.isKeyCertSign(), certificate.isCrlSign(), certificate.getOrganization().getName()));
-        }
-        return dto;
-    }
     public List<CACertificatePreviewDTO> getAllCACertificates(){
         List<CertificateEntity> certificates = certificateRepository.findByTypeIn(
                 List.of(CertificateType.ROOT, CertificateType.INTERMEDIATE)
@@ -247,6 +243,19 @@ public class CertificateService {
                     certificate.isCA(), certificate.isDigitalSignature(),
                     certificate.isKeyEncipherment(), certificate.isKeyCertSign(),certificate.isCrlSign(),
                     certificate.getOrganization().getName()));
+        }
+        return dto;
+    }
+    public List<CertificatePreviewDTO> getAllCertificates(){
+        List<CertificateEntity> certificates = certificateRepository.findAll();
+        List<CertificatePreviewDTO> dto = new ArrayList<>();
+        for (var certificate : certificates){
+            dto.add(new CertificatePreviewDTO(certificate.getId(), certificate.getSubjectName(),
+                    certificate.getIssuerName(), certificate.getType(), certificate.getStatus(),certificate.getOrganization().getName(),
+                    certificate.getStartDate(), certificate.getEndDate(),
+                    certificate.isCA(), certificate.isDigitalSignature(), certificate.isKeyEncipherment(),
+                    certificate.isKeyCertSign(), certificate.isCrlSign(), certificate.getCertificatePem()
+                    ));
         }
         return dto;
     }
@@ -272,13 +281,15 @@ public class CertificateService {
                     cert.getIssuerName(),
                     cert.getType(),
                     cert.getStatus(),
+                    cert.getOrganization().getName(),
                     cert.getStartDate(),
                     cert.getEndDate(),
                     cert.isCA(),
                     cert.isDigitalSignature(),
                     cert.isKeyEncipherment(),
                     cert.isKeyCertSign(),
-                    cert.isCrlSign()
+                    cert.isCrlSign(),
+                    cert.getCertificatePem()
             ));
         }
         return dtoList;
