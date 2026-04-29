@@ -4,6 +4,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import pki_project.pki.dto.CACertificatePreviewDTO;
 import pki_project.pki.dto.CertificatePreviewDTO;
 import pki_project.pki.dto.CertificateRequestDTO;
 import pki_project.pki.model.CertificateEntity;
@@ -31,6 +32,11 @@ public class CertificateController {
     @GetMapping("/all")
     public ResponseEntity<List<CertificatePreviewDTO>> getAllCertificates(){
         return ResponseEntity.ok(certificateService.getAllCertificates());
+    }
+
+    @GetMapping("/ca-certificates")
+    public ResponseEntity<List<CACertificatePreviewDTO>> getAllCACertificates(){
+        return ResponseEntity.ok(certificateService.getAllCACertificates());
     }
 
 

@@ -5,6 +5,7 @@ import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import pki_project.pki.dto.CACertificatePreviewDTO;
 import pki_project.pki.dto.CertificatePreviewDTO;
 import pki_project.pki.dto.CertificateRequestDTO;
 import pki_project.pki.model.CertificateEntity;
@@ -216,6 +217,20 @@ public class CertificateService {
                     certificate.getType(), certificate.getStatus(), certificate.getStartDate(), certificate.getEndDate(),
                     certificate.isCA(), certificate.isDigitalSignature(), certificate.isKeyEncipherment(),
                     certificate.isKeyCertSign(), certificate.isCrlSign(), certificate.getOrganization().getName()));
+        }
+        return dto;
+    }
+    public List<CACertificatePreviewDTO> getAllCACertificates(){
+        List<CertificateEntity> certificates = certificateRepository.findByTypeIn(
+                List.of(CertificateType.ROOT, CertificateType.INTERMEDIATE)
+        );
+        List<CACertificatePreviewDTO> dto = new ArrayList<>();
+        for (var certificate : certificates){
+            dto.add(new CACertificatePreviewDTO(certificate.getId(),certificate.getSubjectName(),
+                    certificate.getType(), certificate.getStartDate(), certificate.getEndDate(),
+                    certificate.isCA(), certificate.isDigitalSignature(),
+                    certificate.isKeyEncipherment(), certificate.isKeyCertSign(),certificate.isCrlSign(),
+                    certificate.getOrganization().getName()));
         }
         return dto;
     }
