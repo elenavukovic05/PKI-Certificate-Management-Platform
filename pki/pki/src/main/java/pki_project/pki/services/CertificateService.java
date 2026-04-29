@@ -238,7 +238,7 @@ public class CertificateService {
             dto.add(new CertificatePreviewDTO(certificate.getId(), certificate.getSubjectName(),certificate.getIssuerName(),
                     certificate.getType(), certificate.getStatus(), certificate.getStartDate(), certificate.getEndDate(),
                     certificate.isCA(), certificate.isDigitalSignature(), certificate.isKeyEncipherment(),
-                    certificate.isKeyCertSign(), certificate.isCrlSign()));
+                    certificate.isKeyCertSign(), certificate.isCrlSign(), certificate.getCertificatePem()));
         }
         return dto;
     }
@@ -270,7 +270,8 @@ public class CertificateService {
                     cert.isDigitalSignature(),
                     cert.isKeyEncipherment(),
                     cert.isKeyCertSign(),
-                    cert.isCrlSign()
+                    cert.isCrlSign(),
+                    cert.getCertificatePem()
             ));
         }
         return dtoList;
