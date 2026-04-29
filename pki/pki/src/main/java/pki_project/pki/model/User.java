@@ -91,6 +91,13 @@ public class User implements UserDetails {
         this.lastName = lastName;
     }
 
+    public Organization getOrganization() {
+        return organization;
+    }
+
+    public void setOrganization(Organization organization) {
+        this.organization = organization;
+    }
 
     @Override
     public boolean isAccountNonExpired() {

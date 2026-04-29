@@ -275,4 +275,42 @@ public class CertificateService {
         }
         return dtoList;
     }
+
+    public void createCertificateAsCAUser(CertificateRequestDTO certificateRequest, Long caUserOrgId) {
+        if (certificateRequest.getType() == CertificateType.ROOT) {
+            throw new RuntimeException("CA user cannot issue root certificates");
+        }
+
+        CertificateEntity issuerEntity = certificateRepository
+                .findById(certificateRequest.getIssuerId())
+                .orElseThrow(() -> new RuntimeException("Issuer not found"));
+
+        if (!issuerEntity.getOrganization().getId().equals(caUserOrgId)) {
+            throw new RuntimeException("CA user can only use issuers from their own organization");
+        }
+
+        createCertificate(certificateRequest);
+    }
+
+    public List<CertificatePreviewDTO> getCertificatesByOrganization(Long organizationId) {
+        List<CertificateEntity> certificates = certificateRepository.findByOrganization_Id(organizationId);
+        List<CertificatePreviewDTO> dtoList = new ArrayList<>();
+        for (CertificateEntity cert : certificates) {
+            dtoList.add(new CertificatePreviewDTO(
+                    cert.getId(),
+                    cert.getSubjectName(),
+                    cert.getIssuerName(),
+                    cert.getType(),
+                    cert.getStatus(),
+                    cert.getStartDate(),
+                    cert.getEndDate(),
+                    cert.isCA(),
+                    cert.isDigitalSignature(),
+                    cert.isKeyEncipherment(),
+                    cert.isKeyCertSign(),
+                    cert.isCrlSign()
+            ));
+        }
+        return dtoList;
+    }
 }
