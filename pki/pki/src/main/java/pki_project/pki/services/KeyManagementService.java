@@ -76,7 +76,7 @@ public class KeyManagementService {
 
             return new SecretKeySpec(keyBytes, "AES");
         } catch (Exception e) {
-            throw new RuntimeException("failed to decrypt organization key", e);
+            throw new RuntimeException("failed to decrypt organization key" + e.getMessage(), e);
         }
     }
 
@@ -122,7 +122,7 @@ public class KeyManagementService {
             KeyFactory keyFactory = KeyFactory.getInstance("RSA");
             return keyFactory.generatePrivate(keySpec);
         } catch (Exception e) {
-            throw new RuntimeException("failed to decrypt private key with org key", e);
+            throw new RuntimeException("failed to decrypt private key with org key" + e.getMessage(), e);
         }
     }
 }

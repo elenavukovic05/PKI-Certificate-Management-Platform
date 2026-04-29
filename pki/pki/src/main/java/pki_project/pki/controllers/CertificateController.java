@@ -33,5 +33,10 @@ public class CertificateController {
         return ResponseEntity.ok(certificateService.getAllCertificates());
     }
 
+    @GetMapping("/my")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<List<CertificatePreviewDTO>> getMyCertificates() {
+        return ResponseEntity.ok(certificateService.getMyCertificates());
+    }
 
 }
