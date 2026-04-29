@@ -4,6 +4,9 @@ import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 import pki_project.pki.dto.CertificatePreviewDTO;
 import pki_project.pki.dto.CertificateRequestDTO;
@@ -11,6 +14,7 @@ import pki_project.pki.model.CertificateEntity;
 import pki_project.pki.model.Issuer;
 import pki_project.pki.model.Organization;
 import pki_project.pki.model.Subject;
+import pki_project.pki.model.User;
 import pki_project.pki.model.enums.CertificateStatus;
 import pki_project.pki.model.enums.CertificateType;
 import pki_project.pki.repositories.CertificateRepository;
@@ -39,6 +43,9 @@ public class CertificateService {
 
     @Autowired
     OrganizationRepository organizationRepository;
+
+    @Autowired
+    private UserDetailsService userDetailsService;
 
     public void createCertificate(CertificateRequestDTO certificateRequest) {
         Subject subject = generateSubject(certificateRequest);
@@ -113,6 +120,15 @@ public class CertificateService {
         }
         certificateEntity.setOrganization(organization);
         // ##############################
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated() && 
+            certificateRequest.getType() == CertificateType.END_ENTITY) {
+            String username = auth.getName();
+            User currentUser = (User) userDetailsService.loadUserByUsername(username);
+            certificateEntity.setOwner(currentUser);
+            certificateEntity.setCreatedBy(currentUser);
+        }
         
         certificateRepository.save(certificateEntity);
     }
@@ -225,5 +241,38 @@ public class CertificateService {
                     certificate.isKeyCertSign(), certificate.isCrlSign()));
         }
         return dto;
+    }
+
+    public List<CertificatePreviewDTO> getMyCertificates() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new RuntimeException("user not authintificated");
+        }
+        
+        String username = authentication.getName(); 
+        
+        User currentUser = (User) userDetailsService.loadUserByUsername(username);
+        
+        List<CertificateEntity> certificates = certificateRepository
+                .findByOwnerIdAndType(currentUser.getId(), CertificateType.END_ENTITY);
+        
+        List<CertificatePreviewDTO> dtoList = new ArrayList<>();
+        for (CertificateEntity cert : certificates) {
+            dtoList.add(new CertificatePreviewDTO(
+                    cert.getId(),
+                    cert.getSubjectName(),
+                    cert.getIssuerName(),
+                    cert.getType(),
+                    cert.getStatus(),
+                    cert.getStartDate(),
+                    cert.getEndDate(),
+                    cert.isCA(),
+                    cert.isDigitalSignature(),
+                    cert.isKeyEncipherment(),
+                    cert.isKeyCertSign(),
+                    cert.isCrlSign()
+            ));
+        }
+        return dtoList;
     }
 }
