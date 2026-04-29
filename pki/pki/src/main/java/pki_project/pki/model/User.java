@@ -34,7 +34,7 @@ public class User implements UserDetails {
     @Column(name = "last_name")
     private String lastName;
 
-    @Column(nullable = false)
+    //@Column(nullable = false)
     private byte[] publicKey;
 
     @Enumerated(EnumType.STRING)
@@ -44,6 +44,9 @@ public class User implements UserDetails {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organization_id")
     private Organization organization; // for admin null
+
+    public User() {
+    }
 
     public User(String username, String password, String firstName, String lastName, byte[] publicKey, Role role, Organization organization) {
         this.username = username;

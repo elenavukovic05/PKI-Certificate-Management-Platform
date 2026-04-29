@@ -20,6 +20,7 @@ public class AdminController {
     @Autowired
     UserService userService;
 
+
     @PostMapping(value = "/add-organization", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> createOrganization(@RequestBody String name){
         organizationService.createOrganization(name);

@@ -21,6 +21,9 @@ public class Organization {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String encryptedOrgKey;
 
+    public Organization() {
+    }
+
     public Organization(String name, String encryptedOrgKey) {
         this.name = name;
         this.encryptedOrgKey = encryptedOrgKey;
