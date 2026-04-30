@@ -237,6 +237,21 @@ public class CertificateService {
         return dto;
     }
 
+    public List<CACertificatePreviewDTO> getAllCACertificates(){
+        List<CertificateEntity> certificates = certificateRepository.findByTypeIn(
+                List.of(CertificateType.ROOT, CertificateType.INTERMEDIATE)
+        );
+        List<CACertificatePreviewDTO> dto = new ArrayList<>();
+        for (var certificate : certificates){
+            dto.add(new CACertificatePreviewDTO(certificate.getId(),certificate.getSubjectName(),
+                    certificate.getType(), certificate.getStartDate(), certificate.getEndDate(),
+                    certificate.isCA(), certificate.isDigitalSignature(),
+                    certificate.isKeyEncipherment(), certificate.isKeyCertSign(),certificate.isCrlSign(),
+                    certificate.getOrganization().getName()));
+        }
+        return dto;
+    }
+
     public List<CertificatePreviewDTO> getMyCertificates() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
@@ -265,7 +280,48 @@ public class CertificateService {
                     cert.isKeyEncipherment(),
                     cert.isKeyCertSign(),
                     cert.isCrlSign(),
-                    cert.getCertificatePem()
+                    cert.getCertificatePem(),
+                    cert.getOrganization() != null ? cert.getOrganization().getName() : null
+            ));
+        }
+        return dtoList;
+    }
+
+    public void createCertificateAsCAUser(CertificateRequestDTO certificateRequest, Long caUserOrgId) {
+        if (certificateRequest.getType() == CertificateType.ROOT) {
+            throw new RuntimeException("CA user cannot issue root certificates");
+        }
+
+        CertificateEntity issuerEntity = certificateRepository
+                .findById(certificateRequest.getIssuerId())
+                .orElseThrow(() -> new RuntimeException("Issuer not found"));
+
+        if (!issuerEntity.getOrganization().getId().equals(caUserOrgId)) {
+            throw new RuntimeException("CA user can only use issuers from their own organization");
+        }
+
+        createCertificate(certificateRequest);
+    }
+
+    public List<CertificatePreviewDTO> getCertificatesByOrganization(Long organizationId) {
+        List<CertificateEntity> certificates = certificateRepository.findByOrganization_Id(organizationId);
+        List<CertificatePreviewDTO> dtoList = new ArrayList<>();
+        for (CertificateEntity cert : certificates) {
+            dtoList.add(new CertificatePreviewDTO(
+                    cert.getId(),
+                    cert.getSubjectName(),
+                    cert.getIssuerName(),
+                    cert.getType(),
+                    cert.getStatus(),
+                    cert.getStartDate(),
+                    cert.getEndDate(),
+                    cert.isCA(),
+                    cert.isDigitalSignature(),
+                    cert.isKeyEncipherment(),
+                    cert.isKeyCertSign(),
+                    cert.isCrlSign(),
+                    cert.getCertificatePem(),
+                    cert.getOrganization() != null ? cert.getOrganization().getName() : null
             ));
         }
         return dtoList;

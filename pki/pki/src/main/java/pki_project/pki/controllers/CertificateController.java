@@ -3,11 +3,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.*;
 import pki_project.pki.dto.CACertificatePreviewDTO;
 import pki_project.pki.dto.CertificatePreviewDTO;
 import pki_project.pki.dto.CertificateRequestDTO;
 import pki_project.pki.model.CertificateEntity;
+import pki_project.pki.model.User;
 import pki_project.pki.services.CertificateService;
 
 import java.util.List;
@@ -19,8 +24,11 @@ public class CertificateController {
     @Autowired
     CertificateService certificateService;
 
+    @Autowired
+    private UserDetailsService userDetailsService;
+
     @PostMapping(value = "/create-certificate", consumes = MediaType.APPLICATION_JSON_VALUE)
-    //@PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> createCertificate(@RequestBody CertificateRequestDTO dto){
         try{
             certificateService.createCertificate(dto);
@@ -29,6 +37,22 @@ public class CertificateController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @PostMapping(value = "/ca/create-certificate", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasRole('CA_USER')")
+    public ResponseEntity<String> createCertificateAsCAUser(
+            @RequestBody CertificateRequestDTO dto) {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            User currentUser = (User) userDetailsService.loadUserByUsername(auth.getName());
+            Long orgId = currentUser.getOrganization().getId();
+            certificateService.createCertificateAsCAUser(dto, orgId);
+            return ResponseEntity.ok("Certificate successfully created!");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     @GetMapping("/all")
     public ResponseEntity<List<CertificatePreviewDTO>> getAllCertificates(){
         return ResponseEntity.ok(certificateService.getAllCertificates());
@@ -38,6 +62,16 @@ public class CertificateController {
     public ResponseEntity<List<CACertificatePreviewDTO>> getAllCACertificates(){
         return ResponseEntity.ok(certificateService.getAllCACertificates());
     }
+
+    @GetMapping("/organization")
+    @PreAuthorize("hasRole('CA_USER')")
+    public ResponseEntity<List<CertificatePreviewDTO>> getOrganizationCertificates() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) userDetailsService.loadUserByUsername(auth.getName());
+        Long orgId = currentUser.getOrganization().getId();
+        return ResponseEntity.ok(certificateService.getCertificatesByOrganization(orgId));
+    }
+
     @GetMapping("/my")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<CertificatePreviewDTO>> getMyCertificates() {
