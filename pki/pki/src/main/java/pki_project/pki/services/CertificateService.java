@@ -49,6 +49,7 @@ public class CertificateService {
     private UserDetailsService userDetailsService;
 
     public void createCertificate(CertificateRequestDTO certificateRequest) {
+        validateCertificateRequest(certificateRequest);
         Subject subject = generateSubject(certificateRequest);
         Issuer issuer = null;
         CertificateEntity issuerEntity = null;
@@ -126,6 +127,40 @@ public class CertificateService {
         
         certificateRepository.save(certificateEntity);
     }
+
+    void validateCertificateRequest(CertificateRequestDTO certificateRequest){
+        if (certificateRequest.getStartDate() == null || certificateRequest.getEndDate() == null) {
+            throw new RuntimeException("Start date and end date are required");
+        }
+        if (certificateRequest.getEndDate().before(certificateRequest.getStartDate())) {
+            throw new RuntimeException("End date must be after start date");
+        }
+
+        String email = certificateRequest.getEmail();
+        if (email == null || !email.matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
+            throw new RuntimeException("Invalid email format");
+        }
+
+        if (certificateRequest.getCommonName() == null || certificateRequest.getCommonName().isBlank()) {
+            throw new RuntimeException("Common name is required");
+        }
+        if (certificateRequest.getCountry() == null || certificateRequest.getCountry().isBlank()) {
+            throw new RuntimeException("Country is required");
+        }
+
+        if (certificateRequest.getType() == CertificateType.INTERMEDIATE) {
+            if (!certificateRequest.isCA() || !certificateRequest.isKeyCertSign()) {
+                throw new RuntimeException("Intermediate certificate must have isCA and keyCertSign set to true");
+            }
+        }
+        if (certificateRequest.getType() == CertificateType.END_ENTITY) {
+            if (certificateRequest.isCA()) {
+                throw new RuntimeException("End entity certificate cannot have isCA set to true");
+            }
+        }
+
+    }
+
     boolean validateIssuer(CertificateEntity issuer, CertificateRequestDTO certificateRequest){
         try{
             if(issuer.getStartDate().after(Date.from(Instant.now()))

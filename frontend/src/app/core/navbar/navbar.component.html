@@ -1,0 +1,13 @@
+<nav class="navbar">
+  <div class="navbar-brand">PKI System</div>
+  
+  <div class="navbar-links">
+    <a *ngIf="role === 'CA_USER'" routerLink="/issue-certificate" routerLinkActive="active">
+      Issue Certificate
+    </a>
+    <a *ngIf="role === 'USER'" routerLink="/my-certificates" routerLinkActive="active">
+      My Certificates
+    </a>
+    <button class="logout-btn" (click)="logout()">Logout</button>
+  </div>
+</nav>

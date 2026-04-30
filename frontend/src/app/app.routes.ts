@@ -15,17 +15,17 @@ export const routes: Routes = [
         component: CertificatePreviewComponent,
         canActivate: [authGuard]
     },
-    {
-        path: '**',
-        redirectTo: 'login'
-    },
-    {
+        {
         path: 'login',
         component: LoginComponent
     },
     {
-    path: 'issue-certificate',
-    component: CaCertificateFormComponent,
-    canActivate: [authGuard]
+        path: 'issue-certificate',
+        component: CaCertificateFormComponent,
+        canActivate: [authGuard]
+    },
+    {
+        path: '**',
+        redirectTo: 'login'
     }
 ];

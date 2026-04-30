@@ -31,7 +31,8 @@ export class CertificateService {
         keyEncipherment: true,
         keyCertSign: false,
         crlSign: false,
-        certificatePem: '-----BEGIN CERTIFICATE-----\nMIIGEzCCA/ugAwIBAgIQf+...\n-----END CERTIFICATE-----'
+        certificatePem: '-----BEGIN CERTIFICATE-----\nMIIGEzCCA/ugAwIBAgIQf+...\n-----END CERTIFICATE-----',
+        organizationName: null
       }
     ];
 

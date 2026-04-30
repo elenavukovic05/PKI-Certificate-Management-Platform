@@ -14,7 +14,7 @@
     <select [(ngModel)]="dto.issuerId">
       <option [ngValue]="null" disabled>Select issuer</option>
       <option *ngFor="let issuer of issuers" [ngValue]="issuer.id">
-        {{ issuer.subjectName }}
+        {{ extractCN(issuer.subjectName) }}
       </option>
     </select>
   </div>
@@ -66,16 +66,19 @@
 
   <div class="extensions">
     <h3>Key Usage Extensions</h3>
-    <label><input type="checkbox" [(ngModel)]="dto.isCA" /> CA</label>
     <label><input type="checkbox" [(ngModel)]="dto.digitalSignature" /> Digital Signature</label>
     <label><input type="checkbox" [(ngModel)]="dto.keyEncipherment" /> Key Encipherment</label>
-    <label><input type="checkbox" [(ngModel)]="dto.keyCertSign" /> Key Cert Sign</label>
     <label><input type="checkbox" [(ngModel)]="dto.crlSign" /> CRL Sign</label>
   </div>
 
-  <div class="messages">
-    <p class="success" *ngIf="successMessage">{{ successMessage }}</p>
-    <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
+  <div class="alert alert-success" *ngIf="successMessage">
+    <span class="alert-icon">✓</span>
+    {{ successMessage }}
+  </div>
+
+  <div class="alert alert-error" *ngIf="errorMessage">
+    <span class="alert-icon">✕</span>
+    {{ errorMessage }}
   </div>
 
   <button (click)="submit()">Issue Certificate</button>
