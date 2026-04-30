@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
-import { CertificatePreviewDTO } from '../../models/certificate.model';
-import { CertificateService } from '../../services/certificate.service';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { CertificatePreviewDTO } from '../../core/models/certificate.model';
 import { CommonModule } from '@angular/common';
+import { CertificateService } from '../../core/services/certificate.service';
 
 @Component({
   selector: 'app-certificate-preview',
@@ -14,22 +14,25 @@ export class CertificatePreviewComponent implements OnInit {
   selectedCert: CertificatePreviewDTO | null = null;
   activeTab: 'general' | 'details' = 'general';
 
-  mockThumbprint = '2b7ccc918c8c51eaa694b7f253263c2ae861304bf2f5c26eea8e6eca9b72cb73';
-  mockPublicKey = '7da1faa3668504bf1bae26a1cb436c4b065b5457aaa3c88246de5f5491ab7a39';
-
-  constructor(private certService: CertificateService) {}
+  constructor(private certService: CertificateService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.certService.getMyCertificates().subscribe({
       next: (data) => {
-        this.certificates = data;
-        if (data.length > 0) {
-          this.selectedCert = data[0]; 
+        console.log('data arrived:', data);
+        console.log('num of certificates:', data?.length);
+        
+        if (data && data.length > 0) {
+          this.certificates = [...data];
+          this.selectedCert = data[0];
+          console.log('selected cert:', this.selectedCert);
+          this.cdr.detectChanges();
         }
       },
-      error: (err) => console.error('Error fetching certificates', err)
+      error: (err) => console.error('error:', err)
     });
   }
+
 
   setTab(tab: 'general' | 'details'): void {
     this.activeTab = tab;

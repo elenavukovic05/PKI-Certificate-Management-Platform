@@ -12,7 +12,7 @@ export interface CertificatePreviewDTO {
   keyCertSign: boolean;
   crlSign: boolean;
   certificatePem: string;
-  organizationName: string | null;
+  organizationName: string;
 }
 
 export interface CertificateRequestDTO {

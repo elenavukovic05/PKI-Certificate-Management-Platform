@@ -2,8 +2,8 @@ import { ChangeDetectorRef, Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { CertificateService } from '../../services/certificate.service';
-import { CertificatePreviewDTO, CertificateRequestDTO } from '../../models/certificate.model';
+import { CertificateService } from '../../core/services/certificate.service';
+import { CertificatePreviewDTO, CertificateRequestDTO } from '../../core/models/certificate.model';
 
 @Component({
   selector: 'app-ca-certificate-form',

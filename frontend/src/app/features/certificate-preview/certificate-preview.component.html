@@ -1,8 +1,18 @@
-<!-- Glavni kontejner se prikazuje samo ako selectedCert postoji -->
+<div class="cert-selector">
+  <button *ngFor="let cert of certificates" 
+          class="cert-chip"
+          [class.active]="selectedCert?.id === cert.id"
+          (click)="selectedCert = cert">
+    <div class="cert-chip-info">
+       <span class="cert-id">ID: {{ cert.id }}</span>
+       <span class="cert-cn">{{ extractField(cert.subjectName, 'CN') }}</span>
+    </div>
+  </button>
+</div>
+ 
 <div class="cert-container" *ngIf="selectedCert">
   
   <div class="cert-header">
-    <!-- Koristimo ?. da sprečimo "Object is possibly null" grešku -->
     <h2>Certificate Viewer: {{ extractField(selectedCert?.subjectName || '', 'CN') }}</h2>
   </div>
 
@@ -11,10 +21,9 @@
     <button [class.active]="activeTab === 'details'" (click)="setTab('details')">Details</button>
   </div>
 
-  <!-- Tab: General (Osnovni podaci o vlasniku i izdavaocu) -->
   <div class="cert-body" *ngIf="activeTab === 'general'">
     
-    <!-- Issued To: Podaci o običnom korisniku koji poseduje sertifikat[cite: 1] -->
+    <!-- Issued To -->
     <div class="info-group">
       <h3>Issued To</h3>
       <div class="info-row">
@@ -31,7 +40,7 @@
       </div>
     </div>
 
-    <!-- Issued By: Podaci o CA telu koje je izdalo ovaj sertifikat[cite: 1] -->
+    <!-- Issued By -->
     <div class="info-group">
       <h3>Issued By</h3>
       <div class="info-row">
@@ -48,12 +57,11 @@
       </div>
     </div>
 
-    <!-- Validity Period: Period važenja definisan prilikom izdavanja[cite: 1] -->
+    <!-- Validity Period -->
     <div class="info-group">
       <h3>Validity Period</h3>
       <div class="info-row">
         <span class="label">Issued On</span>
-        <!-- DatePipe zahteva CommonModule u importima komponente -->
         <span class="value">{{ selectedCert?.startDate | date:'EEEE, MMM d, y, h:mm:ss a' }}</span>
       </div>
       <div class="info-row">
@@ -62,22 +70,10 @@
       </div>
     </div>
 
-    <!-- Fingerprints: Vizuelni prikaz otisaka za verifikaciju -->
-    <div class="info-group borderless">
-      <h3>SHA-256 Fingerprints</h3>
-      <div class="info-row">
-        <span class="label">Certificate</span>
-        <span class="value hash">{{ mockThumbprint }}</span>
-      </div>
-      <div class="info-row">
-        <span class="label">Public Key</span>
-        <span class="value hash">{{ mockPublicKey }}</span>
-      </div>
-    </div>
 
   </div>
 
-  <!-- Tab: Details (Sirovi PEM format sertifikata) -->
+  <!-- Tab: Details -->
   <div class="cert-body" *ngIf="activeTab === 'details'">
     <div class="info-group borderless">
       <h3>Certificate Data (PEM)</h3>
