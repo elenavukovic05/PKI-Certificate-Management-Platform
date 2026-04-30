@@ -12,4 +12,5 @@ export interface CertificatePreviewDTO {
   keyCertSign: boolean;
   crlSign: boolean;
   certificatePem: string;
+  organizationName: string;
 }
