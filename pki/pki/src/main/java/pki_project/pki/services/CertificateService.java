@@ -237,6 +237,21 @@ public class CertificateService {
         return dto;
     }
 
+    public List<CACertificatePreviewDTO> getAllCACertificates(){
+        List<CertificateEntity> certificates = certificateRepository.findByTypeIn(
+                List.of(CertificateType.ROOT, CertificateType.INTERMEDIATE)
+        );
+        List<CACertificatePreviewDTO> dto = new ArrayList<>();
+        for (var certificate : certificates){
+            dto.add(new CACertificatePreviewDTO(certificate.getId(),certificate.getSubjectName(),
+                    certificate.getType(), certificate.getStartDate(), certificate.getEndDate(),
+                    certificate.isCA(), certificate.isDigitalSignature(),
+                    certificate.isKeyEncipherment(), certificate.isKeyCertSign(),certificate.isCrlSign(),
+                    certificate.getOrganization().getName()));
+        }
+        return dto;
+    }
+
     public List<CertificatePreviewDTO> getMyCertificates() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
@@ -265,7 +280,8 @@ public class CertificateService {
                     cert.isKeyEncipherment(),
                     cert.isKeyCertSign(),
                     cert.isCrlSign(),
-                    cert.getCertificatePem()
+                    cert.getCertificatePem(),
+                    cert.getOrganization() != null ? cert.getOrganization().getName() : null
             ));
         }
         return dtoList;
@@ -303,7 +319,9 @@ public class CertificateService {
                     cert.isDigitalSignature(),
                     cert.isKeyEncipherment(),
                     cert.isKeyCertSign(),
-                    cert.isCrlSign()
+                    cert.isCrlSign(),
+                    cert.getCertificatePem(),
+                    cert.getOrganization() != null ? cert.getOrganization().getName() : null
             ));
         }
         return dtoList;
