@@ -1,18 +1,25 @@
 import { Routes } from '@angular/router';
 import { CertificatePreviewComponent } from './features/certificate-preview/certificate-preview.component';
+import { LoginComponent } from './features/login/login.component';
+import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
     {
         path: '',
-        redirectTo: 'my-certificates',
+        redirectTo: 'login',
         pathMatch: 'full'
     },
     {
         path: 'my-certificates',
-        component: CertificatePreviewComponent
+        component: CertificatePreviewComponent,
+        canActivate: [authGuard]
     },
     {
         path: '**',
-        redirectTo: 'my-certificates'
+        redirectTo: 'login'
+    },
+    {
+        path: 'login',
+        component: LoginComponent
     }
 ];
