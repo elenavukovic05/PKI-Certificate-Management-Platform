@@ -18,8 +18,10 @@ public class CertificatePreviewDTO {
     boolean keyEncipherment;
     boolean keyCertSign;
     boolean crlSign;
+    private String certificatePem;
+    private String organizationName;
 
-    public CertificatePreviewDTO(Long id,String subjectName, String issuerName, CertificateType type, CertificateStatus status, Date startDate, Date endDate, boolean isCA, boolean digitalSignature, boolean keyEncipherment, boolean keyCertSign, boolean crlSign) {
+    public CertificatePreviewDTO(Long id,String subjectName, String issuerName, CertificateType type, CertificateStatus status, Date startDate, Date endDate, boolean isCA, boolean digitalSignature, boolean keyEncipherment, boolean keyCertSign, boolean crlSign, String certificatePem,  String organizationName) {
         this.id = id;
         this.subjectName = subjectName;
         this.issuerName = issuerName;
@@ -32,6 +34,8 @@ public class CertificatePreviewDTO {
         this.keyEncipherment = keyEncipherment;
         this.keyCertSign = keyCertSign;
         this.crlSign = crlSign;
+        this.certificatePem = certificatePem;
+        this.organizationName = organizationName;
     }
 
     public Long getId() {
@@ -129,4 +133,21 @@ public class CertificatePreviewDTO {
     public void setCrlSign(boolean crlSign) {
         this.crlSign = crlSign;
     }
+
+    public String getOrganizationName() {
+        return organizationName;
+    }
+
+    public void setOrganizationName(String organizationName) {
+        this.organizationName = organizationName;
+    }
+  
+    public String getCertificatePem() {
+        return certificatePem;
+    }
+
+    public void setCertificatePem(String certificatePem) {
+        this.certificatePem = certificatePem;
+    }
+
 }

@@ -6,6 +6,7 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import pki_project.pki.model.enums.Role;
 
 import java.util.Collection;
 import java.util.List;
@@ -33,7 +34,7 @@ public class User implements UserDetails {
     @Column(name = "last_name")
     private String lastName;
 
-    @Column(nullable = false)
+    //@Column(nullable = false)
     private byte[] publicKey;
 
     @Enumerated(EnumType.STRING)
@@ -43,6 +44,19 @@ public class User implements UserDetails {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organization_id")
     private Organization organization; // for admin null
+
+    public User() {
+    }
+
+    public User(String username, String password, String firstName, String lastName, byte[] publicKey, Role role, Organization organization) {
+        this.username = username;
+        this.password = password;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.publicKey = publicKey;
+        this.role = role;
+        this.organization = organization;
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities()

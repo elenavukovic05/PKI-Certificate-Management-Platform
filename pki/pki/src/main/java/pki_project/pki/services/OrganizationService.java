@@ -27,4 +27,19 @@ public class OrganizationService {
         }
         return dto;
     }
+    public void createOrganization(String name){
+
+        if (name == null || name.isBlank()) {
+            throw new RuntimeException("Organization name is required");
+        }
+
+        if (organizationRepository.existsByName(name)) {
+            throw new RuntimeException("Organization already exists");
+        }
+
+        var orgKey = keyManagementService.generateOrganizationKey();
+        String encryptedOrgKey = keyManagementService.encryptOrganizationKey(orgKey);
+        Organization organization = new Organization(name, encryptedOrgKey);
+        organizationRepository.save(organization);
+    }
 }

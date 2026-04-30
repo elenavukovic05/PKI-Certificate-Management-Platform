@@ -1,0 +1,88 @@
+<!-- Glavni kontejner se prikazuje samo ako selectedCert postoji -->
+<div class="cert-container" *ngIf="selectedCert">
+  
+  <div class="cert-header">
+    <!-- Koristimo ?. da sprečimo "Object is possibly null" grešku -->
+    <h2>Certificate Viewer: {{ extractField(selectedCert?.subjectName || '', 'CN') }}</h2>
+  </div>
+
+  <div class="tabs">
+    <button [class.active]="activeTab === 'general'" (click)="setTab('general')">General</button>
+    <button [class.active]="activeTab === 'details'" (click)="setTab('details')">Details</button>
+  </div>
+
+  <!-- Tab: General (Osnovni podaci o vlasniku i izdavaocu) -->
+  <div class="cert-body" *ngIf="activeTab === 'general'">
+    
+    <!-- Issued To: Podaci o običnom korisniku koji poseduje sertifikat[cite: 1] -->
+    <div class="info-group">
+      <h3>Issued To</h3>
+      <div class="info-row">
+        <span class="label">Common Name (CN)</span>
+        <span class="value">{{ extractField(selectedCert?.subjectName || '', 'CN') }}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Organization (O)</span>
+        <span class="value">{{ extractField(selectedCert?.subjectName || '', 'O') }}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Organizational Unit (OU)</span>
+        <span class="value">{{ extractField(selectedCert?.subjectName || '', 'OU') }}</span>
+      </div>
+    </div>
+
+    <!-- Issued By: Podaci o CA telu koje je izdalo ovaj sertifikat[cite: 1] -->
+    <div class="info-group">
+      <h3>Issued By</h3>
+      <div class="info-row">
+        <span class="label">Common Name (CN)</span>
+        <span class="value">{{ extractField(selectedCert?.issuerName || '', 'CN') }}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Organization (O)</span>
+        <span class="value">{{ extractField(selectedCert?.issuerName || '', 'O') }}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Organizational Unit (OU)</span>
+        <span class="value">{{ extractField(selectedCert?.issuerName || '', 'OU') }}</span>
+      </div>
+    </div>
+
+    <!-- Validity Period: Period važenja definisan prilikom izdavanja[cite: 1] -->
+    <div class="info-group">
+      <h3>Validity Period</h3>
+      <div class="info-row">
+        <span class="label">Issued On</span>
+        <!-- DatePipe zahteva CommonModule u importima komponente -->
+        <span class="value">{{ selectedCert?.startDate | date:'EEEE, MMM d, y, h:mm:ss a' }}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Expires On</span>
+        <span class="value">{{ selectedCert?.endDate | date:'EEEE, MMM d, y, h:mm:ss a' }}</span>
+      </div>
+    </div>
+
+    <!-- Fingerprints: Vizuelni prikaz otisaka za verifikaciju -->
+    <div class="info-group borderless">
+      <h3>SHA-256 Fingerprints</h3>
+      <div class="info-row">
+        <span class="label">Certificate</span>
+        <span class="value hash">{{ mockThumbprint }}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Public Key</span>
+        <span class="value hash">{{ mockPublicKey }}</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Tab: Details (Sirovi PEM format sertifikata) -->
+  <div class="cert-body" *ngIf="activeTab === 'details'">
+    <div class="info-group borderless">
+      <h3>Certificate Data (PEM)</h3>
+      <pre class="pem-block">{{ selectedCert?.certificatePem }}</pre>
+    </div>
+  </div>
+
+</div>
