@@ -1,14 +1,16 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { CertificatePreviewDTO } from '../models/certificate.model';
-// import { HttpClient } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
+import { CertificateRequestDTO } from '../models/certificate.model';
+import { environment } from '../../env/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CertificateService {
 
-  // constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) { }
 
   getMyCertificates(): Observable<CertificatePreviewDTO[]> {
     // Pravi poziv kada proradi login:
@@ -34,5 +36,13 @@ export class CertificateService {
     ];
 
     return of(mockData);
+  }
+
+  getOrganizationCertificates(): Observable<CertificatePreviewDTO[]> {
+    return this.http.get<CertificatePreviewDTO[]>(`${environment.apiHost}/certificates/organization`);
+  }
+
+  createCertificateAsCAUser(dto: CertificateRequestDTO): Observable<string> {
+    return this.http.post(`${environment.apiHost}/certificates/ca/create-certificate`, dto, { responseType: 'text' });
   }
 }
