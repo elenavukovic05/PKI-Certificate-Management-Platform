@@ -15,6 +15,9 @@ public class OrganizationService {
     @Autowired
     OrganizationRepository organizationRepository;
 
+    @Autowired
+    KeyManagementService keyManagementService;
+
     public List<OrganizationDTO> getAllOrganizations(){
         List<Organization> organizations  = organizationRepository.findAll();
         List<OrganizationDTO> dto = new ArrayList<>();
@@ -22,5 +25,20 @@ public class OrganizationService {
             dto.add(new OrganizationDTO(organization.getId(),organization.getName()));
         }
         return dto;
+    }
+    public void createOrganization(String name){
+
+        if (name == null || name.isBlank()) {
+            throw new RuntimeException("Organization name is required");
+        }
+
+        if (organizationRepository.existsByName(name)) {
+            throw new RuntimeException("Organization already exists");
+        }
+
+        var orgKey = keyManagementService.generateOrganizationKey();
+        String encryptedOrgKey = keyManagementService.encryptOrganizationKey(orgKey);
+        Organization organization = new Organization(name, encryptedOrgKey);
+        organizationRepository.save(organization);
     }
 }
