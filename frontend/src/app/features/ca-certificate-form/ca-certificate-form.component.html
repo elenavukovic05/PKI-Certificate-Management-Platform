@@ -9,6 +9,23 @@
     </select>
   </div>
 
+  <div *ngIf="dto.type === 'END_ENTITY'" class="form-group">
+    <label>
+      <input type="checkbox" [(ngModel)]="isDevice" />
+      Issue for device
+    </label>
+  </div>
+
+  <div *ngIf="dto.type === 'END_ENTITY' && !isDevice" class="form-group">
+    <label>Select User</label>
+    <select [(ngModel)]="dto.ownerId">
+      <option [ngValue]="null" disabled>Select user</option>
+      <option *ngFor="let user of users" [ngValue]="user.id">
+        {{ user.firstName }} {{ user.lastName }} ({{ user.email }})
+      </option>
+    </select>
+  </div>
+
   <div class="form-group">
     <label>Issuer</label>
     <select [(ngModel)]="dto.issuerId">
