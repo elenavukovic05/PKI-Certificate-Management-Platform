@@ -1,5 +1,6 @@
 package pki_project.pki.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import pki_project.pki.model.enums.CertificateStatus;
 import pki_project.pki.model.enums.CertificateType;
 
@@ -21,8 +22,7 @@ public class CertificatePreviewDTO {
     private String certificatePem;
     private String organizationName;
 
-    public CertificatePreviewDTO(Long id,String subjectName, String issuerName, CertificateType type,
-                                 CertificateStatus status, String organizationName, Date startDate, Date endDate, boolean isCA, boolean digitalSignature, boolean keyEncipherment, boolean keyCertSign, boolean crlSign, String certificatePem) {
+    public CertificatePreviewDTO(Long id,String subjectName, String issuerName, CertificateType type, CertificateStatus status, Date startDate, Date endDate, boolean isCA, boolean digitalSignature, boolean keyEncipherment, boolean keyCertSign, boolean crlSign, String certificatePem,  String organizationName) {
         this.id = id;
         this.subjectName = subjectName;
         this.issuerName = issuerName;
@@ -95,11 +95,11 @@ public class CertificatePreviewDTO {
         this.endDate = endDate;
     }
 
-    public boolean isCA() {
+    public boolean getIsCA() {
         return isCA;
     }
 
-    public void setCA(boolean CA) {
+    public void setIsCA(boolean CA) {
         isCA = CA;
     }
 
@@ -135,6 +135,14 @@ public class CertificatePreviewDTO {
         this.crlSign = crlSign;
     }
 
+    public String getOrganizationName() {
+        return organizationName;
+    }
+
+    public void setOrganizationName(String organizationName) {
+        this.organizationName = organizationName;
+    }
+  
     public String getCertificatePem() {
         return certificatePem;
     }
@@ -143,11 +151,4 @@ public class CertificatePreviewDTO {
         this.certificatePem = certificatePem;
     }
 
-    public String getOrganizationName() {
-        return organizationName;
-    }
-
-    public void setOrganizationName(String organizationName) {
-        this.organizationName = organizationName;
-    }
 }

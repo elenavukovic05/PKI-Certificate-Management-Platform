@@ -49,6 +49,7 @@ public class CertificateService {
     private UserDetailsService userDetailsService;
 
     public void createCertificate(CertificateRequestDTO certificateRequest) {
+        validateCertificateRequest(certificateRequest);
         Subject subject = generateSubject(certificateRequest);
         Issuer issuer = null;
         CertificateEntity issuerEntity = null;
@@ -80,15 +81,8 @@ public class CertificateService {
         BigInteger serialNumber = new BigInteger(64, random);
         X509Certificate x509Certificate = certificateGenerator.generateCertificate(subject,issuer,certificateRequest,
                 serialNumber);
-
-        /*Certificate certificate = new Certificate(subject, issuer, serialNumber.toString(),
-                certificateRequest.getStartDate(), certificateRequest.getEndDate(),x509Certificate );*/
-
         String encryptedPrivateKey = keyManagementService.encryptPrivateKey(subject.getPrivateKey(), organization);
         String subjectName = subject.getX500Name().toString();
-        /*if (certificateRequest.getType() == CertificateType.ROOT){
-            issuerEntity = null;
-        }*/
         String pem = certificateToPem(x509Certificate);
         // ###################
         CertificateEntity certificateEntity = new CertificateEntity(
@@ -133,6 +127,40 @@ public class CertificateService {
         
         certificateRepository.save(certificateEntity);
     }
+
+    void validateCertificateRequest(CertificateRequestDTO certificateRequest){
+        if (certificateRequest.getStartDate() == null || certificateRequest.getEndDate() == null) {
+            throw new RuntimeException("Start date and end date are required");
+        }
+        if (certificateRequest.getEndDate().before(certificateRequest.getStartDate())) {
+            throw new RuntimeException("End date must be after start date");
+        }
+
+        String email = certificateRequest.getEmail();
+        if (email == null || !email.matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
+            throw new RuntimeException("Invalid email format");
+        }
+
+        if (certificateRequest.getCommonName() == null || certificateRequest.getCommonName().isBlank()) {
+            throw new RuntimeException("Common name is required");
+        }
+        if (certificateRequest.getCountry() == null || certificateRequest.getCountry().isBlank()) {
+            throw new RuntimeException("Country is required");
+        }
+
+        if (certificateRequest.getType() == CertificateType.INTERMEDIATE) {
+            if (!certificateRequest.isCA() || !certificateRequest.isKeyCertSign()) {
+                throw new RuntimeException("Intermediate certificate must have isCA and keyCertSign set to true");
+            }
+        }
+        if (certificateRequest.getType() == CertificateType.END_ENTITY) {
+            if (certificateRequest.isCA()) {
+                throw new RuntimeException("End entity certificate cannot have isCA set to true");
+            }
+        }
+
+    }
+
     boolean validateIssuer(CertificateEntity issuer, CertificateRequestDTO certificateRequest){
         try{
             if(issuer.getStartDate().after(Date.from(Instant.now()))
@@ -232,6 +260,18 @@ public class CertificateService {
         return null;
     }
 
+    public List<CertificatePreviewDTO> getAllCertificates(){
+        List<CertificateEntity> certificates = certificateRepository.findAll();
+        List<CertificatePreviewDTO> dto = new ArrayList<>();
+        for (var certificate : certificates){
+            dto.add(new CertificatePreviewDTO(certificate.getId(), certificate.getSubjectName(),certificate.getIssuerName(),
+                    certificate.getType(), certificate.getStatus(), certificate.getStartDate(), certificate.getEndDate(),
+                    certificate.isCA(), certificate.isDigitalSignature(), certificate.isKeyEncipherment(),
+                    certificate.isKeyCertSign(), certificate.isCrlSign(), certificate.getCertificatePem(), certificate.getOrganization().getName()));
+        }
+        return dto;
+    }
+
     public List<CACertificatePreviewDTO> getAllCACertificates(){
         List<CertificateEntity> certificates = certificateRepository.findByTypeIn(
                 List.of(CertificateType.ROOT, CertificateType.INTERMEDIATE)
@@ -243,19 +283,6 @@ public class CertificateService {
                     certificate.isCA(), certificate.isDigitalSignature(),
                     certificate.isKeyEncipherment(), certificate.isKeyCertSign(),certificate.isCrlSign(),
                     certificate.getOrganization().getName()));
-        }
-        return dto;
-    }
-    public List<CertificatePreviewDTO> getAllCertificates(){
-        List<CertificateEntity> certificates = certificateRepository.findAll();
-        List<CertificatePreviewDTO> dto = new ArrayList<>();
-        for (var certificate : certificates){
-            dto.add(new CertificatePreviewDTO(certificate.getId(), certificate.getSubjectName(),
-                    certificate.getIssuerName(), certificate.getType(), certificate.getStatus(),certificate.getOrganization().getName(),
-                    certificate.getStartDate(), certificate.getEndDate(),
-                    certificate.isCA(), certificate.isDigitalSignature(), certificate.isKeyEncipherment(),
-                    certificate.isKeyCertSign(), certificate.isCrlSign(), certificate.getCertificatePem()
-                    ));
         }
         return dto;
     }
@@ -281,7 +308,6 @@ public class CertificateService {
                     cert.getIssuerName(),
                     cert.getType(),
                     cert.getStatus(),
-                    cert.getOrganization().getName(),
                     cert.getStartDate(),
                     cert.getEndDate(),
                     cert.isCA(),
@@ -289,7 +315,48 @@ public class CertificateService {
                     cert.isKeyEncipherment(),
                     cert.isKeyCertSign(),
                     cert.isCrlSign(),
-                    cert.getCertificatePem()
+                    cert.getCertificatePem(),
+                    cert.getOrganization() != null ? cert.getOrganization().getName() : null
+            ));
+        }
+        return dtoList;
+    }
+
+    public void createCertificateAsCAUser(CertificateRequestDTO certificateRequest, Long caUserOrgId) {
+        if (certificateRequest.getType() == CertificateType.ROOT) {
+            throw new RuntimeException("CA user cannot issue root certificates");
+        }
+
+        CertificateEntity issuerEntity = certificateRepository
+                .findById(certificateRequest.getIssuerId())
+                .orElseThrow(() -> new RuntimeException("Issuer not found"));
+
+        if (!issuerEntity.getOrganization().getId().equals(caUserOrgId)) {
+            throw new RuntimeException("CA user can only use issuers from their own organization");
+        }
+
+        createCertificate(certificateRequest);
+    }
+
+    public List<CertificatePreviewDTO> getCertificatesByOrganization(Long organizationId) {
+        List<CertificateEntity> certificates = certificateRepository.findByOrganization_Id(organizationId);
+        List<CertificatePreviewDTO> dtoList = new ArrayList<>();
+        for (CertificateEntity cert : certificates) {
+            dtoList.add(new CertificatePreviewDTO(
+                    cert.getId(),
+                    cert.getSubjectName(),
+                    cert.getIssuerName(),
+                    cert.getType(),
+                    cert.getStatus(),
+                    cert.getStartDate(),
+                    cert.getEndDate(),
+                    cert.isCA(),
+                    cert.isDigitalSignature(),
+                    cert.isKeyEncipherment(),
+                    cert.isKeyCertSign(),
+                    cert.isCrlSign(),
+                    cert.getCertificatePem(),
+                    cert.getOrganization() != null ? cert.getOrganization().getName() : null
             ));
         }
         return dtoList;

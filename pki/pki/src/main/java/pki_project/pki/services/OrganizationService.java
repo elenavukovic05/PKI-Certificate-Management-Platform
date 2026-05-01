@@ -6,6 +6,7 @@ import pki_project.pki.dto.OrganizationDTO;
 import pki_project.pki.model.Organization;
 import pki_project.pki.repositories.OrganizationRepository;
 
+import javax.crypto.SecretKey;
 import java.util.ArrayList;
 import java.util.List;
 
