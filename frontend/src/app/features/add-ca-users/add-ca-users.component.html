@@ -1,0 +1,58 @@
+<form [formGroup]="caUserForm" (ngSubmit)="onSubmit()" class="form-container">
+  <h1>Create CA User</h1>
+
+  <div *ngIf="errorMessage" class="alert alert-error">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="successMessage" class="alert alert-success">
+    {{ successMessage }}
+  </div>
+
+  <label>
+    Email / Username
+    <input type="email" formControlName="username" placeholder="ca.user@example.com" />
+    <div *ngIf="username.touched && username.invalid" class="error">
+      Valid email is required
+    </div>
+  </label>
+
+  <label>
+    Password
+    <input type="password" formControlName="password" placeholder="Password" />
+    <div *ngIf="password.touched && password.invalid" class="error">
+      Password is required
+    </div>
+  </label>
+
+  <label>
+    First name
+    <input type="text" formControlName="firstName" placeholder="First name" />
+    <div *ngIf="firstName.touched && firstName.invalid" class="error">
+      First name is required
+    </div>
+  </label>
+
+  <label>
+    Last name
+    <input type="text" formControlName="lastName" placeholder="Last name" />
+    <div *ngIf="lastName.touched && lastName.invalid" class="error">
+      Last name is required
+    </div>
+  </label>
+
+  <label>
+    Organization
+    s<select formControlName="organizationId">
+      <option [ngValue]="null" disabled>Select organization</option>
+      <option *ngFor="let org of organizations" [ngValue]="org.id">
+        {{ org.name }}
+      </option>
+    </select>
+    <div *ngIf="organizationId.touched && organizationId.invalid" class="error">
+      Organization is required
+    </div>
+  </label>
+
+  <button type="submit">Create CA User</button>
+</form>
