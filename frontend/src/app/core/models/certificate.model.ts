@@ -14,7 +14,19 @@ export interface CertificatePreviewDTO {
   certificatePem: string;
   organizationName: string;
 }
-
+export interface CACertificatePreviewDTO{
+    id : number;
+    subjectName : string;
+    type : string;
+    startDate : Date;
+    endDate : Date;
+    isCA : boolean;
+    digitalSignature : boolean ;
+    keyEncipherment : boolean;
+    keyCertSign : boolean ;
+    crlSign :boolean ;
+    organizationName : string;
+}
 export interface CertificateRequestDTO {
   commonName: string;
   name: string;

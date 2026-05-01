@@ -58,10 +58,10 @@ public class CertificateController {
         return ResponseEntity.ok(certificateService.getAllCertificates());
     }
 
-    @GetMapping("/ca-certificates")
-    public ResponseEntity<List<CACertificatePreviewDTO>> getAllCACertificates(){
-        return ResponseEntity.ok(certificateService.getAllCACertificates());
-    }
+        @GetMapping("/ca-certificates")
+        public ResponseEntity<List<CACertificatePreviewDTO>> getAllCACertificates(){
+            return ResponseEntity.ok(certificateService.getAllCACertificates());
+        }
 
     @GetMapping("/organization")
     @PreAuthorize("hasRole('CA_USER')")

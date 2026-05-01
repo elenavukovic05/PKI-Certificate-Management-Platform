@@ -18,7 +18,9 @@ public class CACertificatePreviewDTO {
     boolean crlSign;
     private String organizationName;
 
-    public CACertificatePreviewDTO(Long id, String subjectName, CertificateType type, Date startDate, Date endDate, boolean isCA, boolean digitalSignature, boolean keyEncipherment, boolean keyCertSign, boolean crlSign, String organizationName) {
+    public CACertificatePreviewDTO(Long id, String subjectName, CertificateType type, Date startDate,
+                                   Date endDate, boolean isCA, boolean digitalSignature, boolean keyEncipherment,
+                                   boolean keyCertSign, boolean crlSign, String organizationName) {
         this.id = id;
         this.subjectName = subjectName;
         this.type = type;
