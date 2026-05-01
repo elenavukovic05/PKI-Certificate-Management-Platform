@@ -1,0 +1,96 @@
+form {
+  max-width: 720px;
+  margin: 2rem auto;
+  background: #ffffff;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  color: #3b3936;
+}
+
+label {
+  display: block;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #6c6861;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="datetime-local"],
+select {
+  width: 100%;
+  margin-top: 0.4rem;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid #e0ddd8;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  box-sizing: border-box;
+  background-color: #fff;
+  color: #3b3936;
+}
+
+input:focus,
+select:focus {
+  outline: none;
+  border-color: #2c2b29;
+  box-shadow: 0 0 0 3px rgba(44, 43, 41, 0.08);
+}
+
+input[type="checkbox"] {
+  width: auto;
+  margin-right: 0.5rem;
+  accent-color: #2c2b29;
+}
+
+label:has(input[type="checkbox"]) {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.65rem;
+  color: #3b3936;
+}
+.alert {
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.alert-success {
+  background-color: #eafaf1;
+  color: #27ae60;
+}
+
+.alert-error {
+  background-color: #fdedec;
+  color: #c0392b;
+}
+.error {
+  margin-top: 0.35rem;
+  color: #c0392b;
+  font-size: 0.85rem;
+}
+
+button {
+  width: 100%;
+  margin-top: 1.2rem;
+  padding: 0.8rem;
+  background-color: #2c2b29;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #3b3936;
+}
+
+button:disabled {
+  background-color: #b8b3ad;
+  cursor: not-allowed;
+}

@@ -1,0 +1,136 @@
+<form [formGroup]="certificateForm" (ngSubmit)="onSubmit()">
+  <h1>Create a certificate</h1>
+  <div *ngIf="errorMessage" class="alert alert-error">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="successMessage" class="alert alert-success">
+    {{ successMessage }}
+  </div>
+  <label>
+    Common name
+    <input type="text" formControlName="commonName" placeholder="Common name" />
+    <div *ngIf="commonName.touched && commonName.invalid" class="error">
+      Required
+    </div>
+  </label>
+
+  <label>
+    First name
+    <input type="text" formControlName="name" placeholder="First name" />
+    <div *ngIf="name.touched && name.invalid" class="error">
+      Required
+    </div>
+  </label>
+
+  <label>
+    Last name
+    <input type="text" formControlName="lastName" placeholder="Last name" />
+    <div *ngIf="lastName.touched && lastName.invalid" class="error">
+      Required
+    </div>
+  </label>
+
+  <label>
+    Organization (O)
+    <input type="text" formControlName="organization" placeholder="Organization" />
+    <div *ngIf="organization.touched && organization.invalid" class="error">
+      Required
+    </div>
+  </label>
+
+  <label>
+    Email
+    <input type="email" formControlName="email" placeholder="Email" />
+    <div *ngIf="email.touched && email.invalid" class="error">
+      Invalid email
+    </div>
+  </label>
+
+  <label>
+    Organizational Unit
+    <input type="text" formControlName="organizationalUnit" placeholder="OU" />
+  </label>
+
+  <label>
+    Country
+    <input type="text" formControlName="country" />
+    <div *ngIf="country.touched && country.invalid" class="error">
+      Required
+    </div>
+  </label>
+
+  <label>
+    Start date
+    <input type="datetime-local" formControlName="startDate" />
+    <div *ngIf="startDate.touched && startDate.invalid" class="error">
+    Required
+  </div>
+  </label>
+
+  <label>
+    End date
+    <input type="datetime-local" formControlName="endDate" />
+    <div *ngIf="endDate.touched && endDate.invalid" class="error">
+    Required
+  </div>
+  </label>
+
+  <label>
+    Type
+    <select formControlName="type">
+    <option [ngValue]="'ROOT'">ROOT</option>
+    <option [ngValue]="'INTERMEDIATE'">INTERMEDIATE</option>
+    <option [ngValue]="'END_ENTITY'">END ENTITY</option>
+  </select>
+  </label>
+
+  <label *ngIf="isNotRoot">
+    Issuer
+    <select formControlName="issuerId">
+      <option *ngFor="let i of issuers" [ngValue]="i.id">
+        {{ i.subjectName }} | {{ i.type }} | {{ i.organizationName }}
+      </option>
+    </select>
+  </label>
+
+  <label *ngIf = "isRoot">
+    Organization (system)
+    <select formControlName="organizationId">
+      <option *ngFor="let o of organizations" [ngValue]="o.id">
+        {{ o.name }}
+      </option>
+    </select>
+  </label>
+  <label *ngIf="isEndEntity">
+    <label>Select User</label>
+    <select formControlName="ownerId">
+      <option [ngValue]="null" disabled>Select user</option>
+      <option *ngFor="let user of users" [ngValue]="user.id">
+        {{ user.firstName }} {{ user.lastName }} ({{ user.email }})
+      </option>
+    </select>
+  </label>
+  <label>
+    <input type="checkbox" formControlName="isCA" /> CA
+  </label>
+
+  <label>
+    <input type="checkbox" formControlName="digitalSignature" /> Digital Signature
+  </label>
+
+  <label>
+    <input type="checkbox" formControlName="keyEncipherment" /> Key Encipherment
+  </label>
+
+  <label>
+    <input type="checkbox" formControlName="keyCertSign" /> Key Cert Sign
+  </label>
+
+  <label>
+    <input type="checkbox" formControlName="crlSign" /> CRL Sign
+  </label>
+
+  <button type="submit">Create</button>
+
+</form>

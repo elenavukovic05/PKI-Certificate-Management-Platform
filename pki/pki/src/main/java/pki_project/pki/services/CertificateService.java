@@ -159,9 +159,10 @@ public class CertificateService {
             throw new RuntimeException("Country is required");
         }
 
-        if (certificateRequest.getType() == CertificateType.INTERMEDIATE) {
+        if (certificateRequest.getType() == CertificateType.INTERMEDIATE ||
+                certificateRequest.getType() == CertificateType.ROOT) {
             if (!certificateRequest.isCA() || !certificateRequest.isKeyCertSign()) {
-                throw new RuntimeException("Intermediate certificate must have isCA and keyCertSign set to true");
+                throw new RuntimeException("Root/Intermediate certificate must have isCA and keyCertSign set to true");
             }
         }
         if (certificateRequest.getType() == CertificateType.END_ENTITY) {
