@@ -31,7 +31,14 @@ export class CertificateService {
     return this.http.post(`${environment.apiHost}/certificates/create-certificate`, dto, { responseType: 'text' });
   }
   getOrganizations(): Observable<OrganizationDTO[]> {
-  return this.http.get<OrganizationDTO[]>(`${environment.apiHost}/organizations/all`);
+    return this.http.get<OrganizationDTO[]>(`${environment.apiHost}/organizations/all`);
+  }
+  addOrganization(dto: string): Observable<string> {
+    return this.http.post(`${environment.apiHost}/admin/add-organization`, dto, {
+      responseType: 'text',
+      headers: { 'Content-Type': 'text/plain' }
+    }
+  );
   }
   getCACertificates(): Observable<CACertificatePreviewDTO[]> {
     return this.http.get<CACertificatePreviewDTO[]>(`${environment.apiHost}/certificates/ca-certificates`);

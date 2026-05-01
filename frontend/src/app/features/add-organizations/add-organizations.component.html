@@ -1,0 +1,26 @@
+<form [formGroup]="organizationForm" (ngSubmit)="onSubmit()" class="form-container">
+  <h1>Create Organization</h1>
+
+  <div *ngIf="errorMessage" class="alert alert-error">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="successMessage" class="alert alert-success">
+    {{ successMessage }}
+  </div>
+
+  <label>
+    Organization Name
+    <input
+      type="text"
+      formControlName="name"
+      placeholder="Enter organization name"
+    />
+
+    <div *ngIf="name.touched && name.invalid" class="error">
+      Organization name is required
+    </div>
+  </label>
+
+  <button type="submit">Create Organization</button>
+</form>

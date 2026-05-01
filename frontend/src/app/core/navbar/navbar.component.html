@@ -8,6 +8,12 @@
     <a *ngIf="role === 'ADMIN'" routerLink="/create-certificates" routerLinkActive="active">
       Issue Certificate
     </a>
+    <a *ngIf="role === 'ADMIN'" routerLink="/add-ca-user" routerLinkActive="active">
+      Add CA Users
+    </a>
+    <a *ngIf="role === 'ADMIN'" routerLink="/add-organization" routerLinkActive="active">
+      Add Organizations
+    </a>
     <a *ngIf="role === 'USER'" routerLink="/my-certificates" routerLinkActive="active">
       My Certificates
     </a>

@@ -5,6 +5,8 @@ import { authGuard } from './core/guards/auth.guard';
 import { CaCertificateFormComponent } from './features/ca-certificate-form/ca-certificate-form.component';
 import { AllCertificatesComponent } from './features/all-certificates/all-certificates.component';
 import { CreateCertificatesComponent } from './features/create-certificates/create-certificates.component';
+import { AddCaUsersComponent } from './features/add-ca-users/add-ca-users.component';
+import { AddOrganizationsComponent } from './features/add-organizations/add-organizations.component';
 
 export const routes: Routes = [
     {
@@ -20,6 +22,16 @@ export const routes: Routes = [
     {
         path : 'create-certificates',
         component : CreateCertificatesComponent,
+        canActivate : [authGuard]
+    },
+    {
+        path : 'add-ca-user',
+        component : AddCaUsersComponent,
+        canActivate : [authGuard]
+    },
+    {
+        path : 'add-organization',
+        component : AddOrganizationsComponent,
         canActivate : [authGuard]
     },
     {

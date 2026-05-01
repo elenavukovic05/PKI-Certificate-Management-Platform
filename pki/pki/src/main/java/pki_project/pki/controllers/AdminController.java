@@ -21,7 +21,7 @@ public class AdminController {
     UserService userService;
 
 
-    @PostMapping(value = "/add-organization", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/add-organization", consumes = MediaType.TEXT_PLAIN_VALUE)
     public ResponseEntity<String> createOrganization(@RequestBody String name){
         organizationService.createOrganization(name);
         return ResponseEntity.ok("Organization created successfuly");
