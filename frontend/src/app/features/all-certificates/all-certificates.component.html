@@ -1,1 +1,60 @@
-<p>all-certificates works!</p>
+<div class="certificates-page">
+  <h1>All Certificates</h1>
+
+  <div *ngIf="errorMessage" class="alert alert-error">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="certificates.length === 0" class="empty-message">
+    No certificates found.
+  </div>
+
+  <div class="table-wrapper" *ngIf="certificates.length > 0">
+    <table>
+      <thead>
+        <tr>
+          <th>Subject</th>
+          <th>Issuer</th>
+          <th>Type</th>
+          <th>Status</th>
+          <th>Organization</th>
+          <th>Valid From</th>
+          <th>Valid To</th>
+          <th>Extensions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let cert of certificates">
+          <td>{{ cert.subjectName }}</td>
+          <td>{{ cert.issuerName }}</td>
+          <td>{{ cert.type }}</td>
+          <td>
+            <span class="status" [class.revoked]="cert.status === 'REVOKED'">
+              {{ cert.status }}
+            </span>
+          </td>
+          <td>{{ cert.organizationName }}</td>
+          <td>{{ cert.startDate}}</td>
+          <td>{{ cert.endDate }}</td>
+
+          <td>
+            <div class="extensions">
+              <span *ngIf="cert.isCA">CA</span>
+              <span *ngIf="cert.digitalSignature">Digital Signature</span>
+              <span *ngIf="cert.keyEncipherment">Key Encipherment</span>
+              <span *ngIf="cert.keyCertSign">Key Cert Sign</span>
+              <span *ngIf="cert.crlSign">CRL Sign</span>
+            </div>
+          </td>
+
+          <!-- <td>
+            <button type="button" (click)="viewCertificate(cert)">
+              View
+            </button>
+          </td> -->
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

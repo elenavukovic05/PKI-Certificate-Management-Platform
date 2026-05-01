@@ -36,4 +36,7 @@ export class CertificateService {
   getCACertificates(): Observable<CACertificatePreviewDTO[]> {
     return this.http.get<CACertificatePreviewDTO[]>(`${environment.apiHost}/certificates/ca-certificates`);
   }
+  getAllCertificates() : Observable<CertificatePreviewDTO[]>{
+      return this.http.get<CertificatePreviewDTO[]>(`${environment.apiHost}/certificates/all`);
+  }
 }
