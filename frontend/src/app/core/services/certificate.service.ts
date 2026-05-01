@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { CertificatePreviewDTO } from '../models/certificate.model';
+import { CertificatePreviewDTO, CertificateRequestDTO } from '../models/certificate.model';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../env/environment';
 
@@ -13,5 +13,13 @@ export class CertificateService {
 
   getMyCertificates(): Observable<CertificatePreviewDTO[]> {
     return this.http.get<CertificatePreviewDTO[]>(`${environment.apiHost}/certificates/my`);
+  }
+
+  getOrganizationCertificates(): Observable<CertificatePreviewDTO[]> {
+    return this.http.get<CertificatePreviewDTO[]>(`${environment.apiHost}/certificates/organization`);
+  }
+
+  createCertificateAsCAUser(dto: CertificateRequestDTO): Observable<string> {
+    return this.http.post(`${environment.apiHost}/certificates/ca/create-certificate`, dto, { responseType: 'text' });
   }
 }

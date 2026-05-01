@@ -1,0 +1,85 @@
+<div class="form-container">
+  <h2>Issue Certificate</h2>
+
+  <div class="form-group">
+    <label>Type</label>
+    <select [(ngModel)]="dto.type">
+      <option value="INTERMEDIATE">Intermediate CA</option>
+      <option value="END_ENTITY">End Entity</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label>Issuer</label>
+    <select [(ngModel)]="dto.issuerId">
+      <option [ngValue]="null" disabled>Select issuer</option>
+      <option *ngFor="let issuer of issuers" [ngValue]="issuer.id">
+        {{ extractCN(issuer.subjectName) }}
+      </option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label>Common Name (CN)</label>
+    <input type="text" [(ngModel)]="dto.commonName" placeholder="e.g. John Doe" />
+  </div>
+
+  <div class="form-group">
+    <label>First Name</label>
+    <input type="text" [(ngModel)]="dto.name" />
+  </div>
+
+  <div class="form-group">
+    <label>Last Name</label>
+    <input type="text" [(ngModel)]="dto.lastName" />
+  </div>
+
+  <div class="form-group">
+    <label>Organization (O)</label>
+    <input type="text" [(ngModel)]="dto.organization" />
+  </div>
+
+  <div class="form-group">
+    <label>Organizational Unit (OU)</label>
+    <input type="text" [(ngModel)]="dto.organizationalUnit" />
+  </div>
+
+  <div class="form-group">
+    <label>Country (C)</label>
+    <input type="text" [(ngModel)]="dto.country" maxlength="2" placeholder="e.g. RS" />
+  </div>
+
+  <div class="form-group">
+    <label>Email</label>
+    <input type="email" [(ngModel)]="dto.email" />
+  </div>
+
+  <div class="form-group">
+    <label>Start Date</label>
+    <input type="date" [(ngModel)]="dto.startDate" />
+  </div>
+
+  <div class="form-group">
+    <label>End Date</label>
+    <input type="date" [(ngModel)]="dto.endDate" />
+  </div>
+
+  <div class="extensions">
+    <h3>Key Usage Extensions</h3>
+    <label><input type="checkbox" [(ngModel)]="dto.digitalSignature" /> Digital Signature</label>
+    <label><input type="checkbox" [(ngModel)]="dto.keyEncipherment" /> Key Encipherment</label>
+    <label><input type="checkbox" [(ngModel)]="dto.crlSign" /> CRL Sign</label>
+  </div>
+
+  <div class="alert alert-success" *ngIf="successMessage">
+    <span class="alert-icon">✓</span>
+    {{ successMessage }}
+  </div>
+
+  <div class="alert alert-error" *ngIf="errorMessage">
+    <span class="alert-icon">✕</span>
+    {{ errorMessage }}
+  </div>
+
+  <button (click)="submit()">Issue Certificate</button>
+</div>

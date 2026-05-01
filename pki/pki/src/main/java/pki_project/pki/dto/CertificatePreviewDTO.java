@@ -1,5 +1,6 @@
 package pki_project.pki.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import pki_project.pki.model.enums.CertificateStatus;
 import pki_project.pki.model.enums.CertificateType;
 
@@ -94,11 +95,11 @@ public class CertificatePreviewDTO {
         this.endDate = endDate;
     }
 
-    public boolean isCA() {
+    public boolean getIsCA() {
         return isCA;
     }
 
-    public void setCA(boolean CA) {
+    public void setIsCA(boolean CA) {
         isCA = CA;
     }
 
