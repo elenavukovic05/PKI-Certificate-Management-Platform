@@ -20,6 +20,7 @@ import pki_project.pki.model.enums.CertificateStatus;
 import pki_project.pki.model.enums.CertificateType;
 import pki_project.pki.repositories.CertificateRepository;
 import pki_project.pki.repositories.OrganizationRepository;
+import pki_project.pki.repositories.UserRepository;
 
 import java.math.BigInteger;
 import java.security.*;
@@ -47,6 +48,9 @@ public class CertificateService {
 
     @Autowired
     private UserDetailsService userDetailsService;
+
+    @Autowired
+    private UserRepository userRepository;
 
     public void createCertificate(CertificateRequestDTO certificateRequest) {
         validateCertificateRequest(certificateRequest);
@@ -121,7 +125,14 @@ public class CertificateService {
             certificateRequest.getType() == CertificateType.END_ENTITY) {
             String username = auth.getName();
             User currentUser = (User) userDetailsService.loadUserByUsername(username);
-            certificateEntity.setOwner(currentUser);
+            //certificateEntity.setOwner(currentUser)
+            User owner = null;
+            if (certificateRequest.getOwnerId() != null){
+                owner = userRepository
+                        .findById(certificateRequest.getOwnerId())
+                        .orElseThrow(() -> new RuntimeException("Owner not found"));
+            }
+            certificateEntity.setOwner(owner);
             certificateEntity.setCreatedBy(currentUser);
         }
         

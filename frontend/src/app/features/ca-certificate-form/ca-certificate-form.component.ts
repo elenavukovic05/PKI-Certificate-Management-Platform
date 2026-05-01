@@ -15,6 +15,8 @@ export class CaCertificateFormComponent {
   issuers: CertificatePreviewDTO[] = [];
   successMessage = '';
   errorMessage = '';
+  users: any[] = [];
+  isDevice: boolean = false;
 
   dto: CertificateRequestDTO = {
     commonName: '',
@@ -33,7 +35,8 @@ export class CaCertificateFormComponent {
     keyCertSign: false,
     crlSign: false,
     organizationId: null,
-    type: 'END_ENTITY'
+    type: 'END_ENTITY',
+    ownerId: null
   };
 
   constructor(
@@ -50,6 +53,17 @@ export class CaCertificateFormComponent {
       },
       error: () => {
         this.errorMessage = 'Failed to load issuers.';
+        this.cdr.detectChanges();
+      }
+    });
+
+    this.certService.getUsers().subscribe({
+      next: (data) => {
+        this.users = data;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.errorMessage = 'Failed to load users.';
         this.cdr.detectChanges();
       }
     });
@@ -74,6 +88,18 @@ export class CaCertificateFormComponent {
       return;
     }
 
+    if (this.dto.type === 'END_ENTITY') {
+      if (!this.isDevice && !this.dto.ownerId) {
+        this.errorMessage = 'Please select a user.';
+        this.cdr.detectChanges();
+        return;
+      }
+
+      if (this.isDevice) {
+        this.dto.ownerId = null;
+      }
+    }
+
     this.certService.createCertificateAsCAUser(this.dto).subscribe({
       next: () => {
         this.successMessage = 'Certificate successfully created!';
@@ -96,6 +122,7 @@ export class CaCertificateFormComponent {
       this.dto.isCA = true;
       this.dto.keyCertSign = true;
       this.dto.digitalSignature = true;
+      this.dto.ownerId = null;
     } else {
       this.dto.isCA = false;
       this.dto.keyCertSign = false;
