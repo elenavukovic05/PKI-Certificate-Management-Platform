@@ -21,7 +21,17 @@ export class LoginComponent {
     this.errorMessage = '';
     this.authService.login(this.username, this.password).subscribe({
       next: () => {
-        this.router.navigate(['/my-certificates']);
+        const token = this.authService.getToken();
+        console.log('TOKEN:', token);
+
+        const role = this.authService.getRole();
+        console.log('ROLE:', role);
+
+        if (role === 'CA_USER') {
+          this.router.navigate(['/issue-certificate']);
+        } else {
+          this.router.navigate(['/my-certificates']);
+        }
       },
       error: () => {
         this.errorMessage = 'Invalid username or password.';

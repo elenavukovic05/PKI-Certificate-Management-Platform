@@ -22,4 +22,8 @@ export class CertificateService {
   createCertificateAsCAUser(dto: CertificateRequestDTO): Observable<string> {
     return this.http.post(`${environment.apiHost}/certificates/ca/create-certificate`, dto, { responseType: 'text' });
   }
+
+  getUsers(): Observable<any[]> {
+    return this.http.get<any[]>(`${environment.apiHost}/users/regular`);
+  }
 }

@@ -7,11 +7,15 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import pki_project.pki.dto.CAUserDTO;
+import pki_project.pki.dto.UserDTO;
 import pki_project.pki.model.Organization;
 import pki_project.pki.model.User;
 import pki_project.pki.model.enums.Role;
 import pki_project.pki.repositories.OrganizationRepository;
 import pki_project.pki.repositories.UserRepository;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class UserService implements UserDetailsService {
@@ -43,5 +47,22 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() ->
                         new UsernameNotFoundException("User with that email not found")
                 );
+    }
+
+    public List<UserDTO> getRegularUsers() {
+        List<User> users = userRepository.findByRole(Role.USER);
+
+        List<UserDTO> result = new ArrayList<>();
+
+        for (User user : users) {
+            result.add(new UserDTO(
+                    user.getId(),
+                    user.getUsername(), // email
+                    user.getFirstName(),
+                    user.getLastName()
+            ));
+        }
+
+        return result;
     }
 }

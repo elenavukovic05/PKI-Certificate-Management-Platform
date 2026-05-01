@@ -22,6 +22,7 @@ public class CertificateRequestDTO {
     boolean crlSign;
     private Long organizationId;
     private CertificateType type;
+    private Long ownerId;
 
     public CertificateRequestDTO(String commonName, String name, String lastName, String organization,
                                  String email, String organizationalUnit, String country, Date startDate,
@@ -180,5 +181,13 @@ public class CertificateRequestDTO {
 
     public void setOrganizationId(Long organizationId) {
         this.organizationId = organizationId;
+    }
+
+    public Long getOwnerId() {
+        return ownerId;
+    }
+
+    public void setOwnerId(Long ownerId) {
+        this.ownerId = ownerId;
     }
 }

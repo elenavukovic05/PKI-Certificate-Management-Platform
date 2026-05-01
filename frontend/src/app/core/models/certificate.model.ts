@@ -33,4 +33,5 @@ export interface CertificateRequestDTO {
   crlSign: boolean;
   organizationId: number | null;
   type: string;
+  ownerId?: number | null;
 }
