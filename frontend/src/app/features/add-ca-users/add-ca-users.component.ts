@@ -79,7 +79,7 @@ export class AddCaUsersComponent {
       };
       this.userService.addCAUser(dto).subscribe({
         next: () => {
-          this.successMessage = 'CA User created successfully';
+          this.successMessage = 'CA User created successfully. Activation link has been sent.';
           this.errorMessage = '';
           this.caUserForm.reset();
         },

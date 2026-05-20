@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import pki_project.pki.model.enums.Role;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 
@@ -44,6 +45,15 @@ public class User implements UserDetails {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organization_id")
     private Organization organization; // for admin null
+
+    @Column(nullable = false)
+    private boolean enabled = true;
+
+    @Column(name = "activation_token")
+    private String activationToken;
+
+    @Column(name = "activation_token_expires_at")
+    private Date activationTokenExpiresAt;
 
     public User() {
     }
@@ -130,7 +140,7 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return enabled;
     }
 
     public Role getRole() {
@@ -139,5 +149,28 @@ public class User implements UserDetails {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+    public boolean getEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public String getActivationToken() {
+        return activationToken;
+    }
+
+    public void setActivationToken(String activationToken) {
+        this.activationToken = activationToken;
+    }
+
+    public Date getActivationTokenExpiresAt() {
+        return activationTokenExpiresAt;
+    }
+
+    public void setActivationTokenExpiresAt(Date activationTokenExpiresAt) {
+        this.activationTokenExpiresAt = activationTokenExpiresAt;
     }
 }

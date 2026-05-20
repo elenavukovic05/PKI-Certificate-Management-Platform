@@ -3,7 +3,7 @@
 
   <div class="form-group">
     <label>Type</label>
-    <select [(ngModel)]="dto.type">
+    <select [(ngModel)]="dto.type" (ngModelChange)="onTypeChange()">
       <option value="INTERMEDIATE">Intermediate CA</option>
       <option value="END_ENTITY">End Entity</option>
     </select>
