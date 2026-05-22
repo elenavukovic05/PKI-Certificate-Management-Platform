@@ -43,7 +43,7 @@
 
   <label>
     Organization
-    s<select formControlName="organizationId">
+    <select formControlName="organizationId">
       <option [ngValue]="null" disabled>Select organization</option>
       <option *ngFor="let org of organizations" [ngValue]="org.id">
         {{ org.name }}
