@@ -49,4 +49,35 @@ export class CertificatePreviewComponent implements OnInit {
     }
     return '<Not part of certificate>';
   }
+
+  downloadCertificate(format: 'pem' | 'cer'): void {
+    if (!this.selectedCert) return;
+
+    const certId = this.selectedCert.id;
+    const filename = `certificate-${certId}.${format}`;
+
+    const downloadMethod = format === 'pem' 
+      ? this.certService.downloadPem(certId) 
+      : this.certService.downloadCer(certId);
+
+    downloadMethod.subscribe({
+      next: (blob: Blob) => {
+        // create url from blob
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        
+        document.body.appendChild(a);
+        a.click();
+        
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      },
+      error: (err) => {
+        console.error(`error while downloading ${format.toUpperCase()} file:`, err);
+        alert('you do not have permission to download this certificate or the file is unavailable');
+      }
+    });
+  }
 }

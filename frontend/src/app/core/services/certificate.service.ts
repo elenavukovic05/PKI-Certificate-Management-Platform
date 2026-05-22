@@ -46,4 +46,16 @@ export class CertificateService {
   getAllCertificates() : Observable<CertificatePreviewDTO[]>{
       return this.http.get<CertificatePreviewDTO[]>(`${environment.apiHost}/certificates/all`);
   }
+
+  downloadPem(id: number): Observable<Blob> {
+    return this.http.get(`${environment.apiHost}/certificates/${id}/download/pem`, {
+      responseType: 'blob'
+    });
+  }
+
+  downloadCer(id: number): Observable<Blob> {
+    return this.http.get(`${environment.apiHost}/certificates/${id}/download/cer`, {
+      responseType: 'blob'
+    });
+  }
 }
