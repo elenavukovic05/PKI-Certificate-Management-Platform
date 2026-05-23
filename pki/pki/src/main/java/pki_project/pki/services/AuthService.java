@@ -29,12 +29,21 @@ public class AuthService {
 
         User user = (User) authentication.getPrincipal();
 
+        if (user.isTwoFactorEnabled()) {
+            String tempToken = jwtUtil.generateTemp2FAToken(
+                    user.getUsername(),
+                    user.getRole().name()
+            );
+            // requires2FA = true we need entering code on front page
+            return new LoginResponseDTO(tempToken, true);
+        }
+
         String token = jwtUtil.generateToken(
                 user.getUsername(),
                 user.getRole().name()
         );
 
-        return new LoginResponseDTO(token);
+        return new LoginResponseDTO(token, false);
     }
 
 }

@@ -1,15 +1,71 @@
 <div class="login-container">
-  <div class="login-box">
-    <h2>PKI Login</h2>
+    <div class="login-box">
+  <h2>Login</h2>
+  
+  <!-- Normalan login -->
+  <div *ngIf="!requires2FA">
     <div class="form-group">
-      <label>Email</label>
-      <input type="email" [(ngModel)]="username" placeholder="Enter email" />
+      <label for="username">Username</label>
+      <input 
+        type="text" 
+        id="username" 
+        [(ngModel)]="username" 
+        placeholder="Enter username"
+      />
     </div>
+    
     <div class="form-group">
-      <label>Password</label>
-      <input type="password" [(ngModel)]="password" placeholder="Enter password" />
+      <label for="password">Password</label>
+      <input 
+        type="password" 
+        id="password" 
+        [(ngModel)]="password" 
+        placeholder="Enter password"
+        (keyup.enter)="login()"
+      />
     </div>
-    <div class="error" *ngIf="errorMessage">{{ errorMessage }}</div>
-    <button (click)="login()">Login</button>
+    
+    <div *ngIf="errorMessage" class="error-message">
+      {{ errorMessage }}
+    </div>
+    
+    <button (click)="login()" [disabled]="!username || !password">
+      Login
+    </button>
   </div>
+  
+  <!-- 2FA verifikacija -->
+  <div *ngIf="requires2FA">
+    <p class="info-message">
+      Two-factor authentication is enabled for your account.
+      Please enter the 6-digit code from your authenticator app.
+    </p>
+    
+    <div class="form-group">
+      <label for="code">Verification Code</label>
+      <input 
+        type="text" 
+        id="code" 
+        [(ngModel)]="code" 
+        placeholder="000000"
+        maxlength="6"
+        (keyup.enter)="login()"
+        autofocus
+      />
+    </div>
+    
+    <div *ngIf="errorMessage" class="error-message">
+      {{ errorMessage }}
+    </div>
+    
+    <div class="button-group">
+      <button (click)="login()" [disabled]="code.length !== 6">
+        Verify
+      </button>
+      <button class="btn-secondary" (click)="requires2FA = false; code = ''">
+        Back to Login
+      </button>
+    </div>
+  </div>
+</div>
 </div>

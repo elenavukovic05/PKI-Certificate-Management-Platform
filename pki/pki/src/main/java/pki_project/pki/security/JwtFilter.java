@@ -46,6 +46,14 @@ public class JwtFilter extends OncePerRequestFilter {
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
                 if (jwtUtil.isTokenValid(token, username)) {
+                    boolean isTempToken = jwtUtil.requiresTwoFactor(token); // if 2fa is enabled, user has not finished setup
+                    String requestPath = request.getServletPath();
+ 
+                    if (isTempToken && !requestPath.equals("/api/v1/auth/2fa/verify")) {    // if thats the case, than this is only endpoint avalible
+                        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                        response.getWriter().write("2FA verification required");    // blocks temp 2fa tokens from accessing protected endpoints
+                        return;
+                    }
                     String role = jwtUtil.extractRole(token);
 
                     UsernamePasswordAuthenticationToken authToken =

@@ -1,31 +1,79 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { tap } from 'rxjs';
+import { tap } from 'rxjs/operators';
+import { Observable, Subject } from 'rxjs';
 import { environment } from '../../../env/environment';
+
+export interface LoginResponse {
+  accessToken: string;
+  requires2FA: boolean;
+}
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
+  private tempToken: string | null = null;
+  private authStateChanged = new Subject<void>();
+  authStateChanged$ = this.authStateChanged.asObservable();
+
   constructor(private http: HttpClient, private router: Router) {}
 
-  login(username: string, password: string) {
-    return this.http.post<{ accessToken: string }>(
+  login(username: string, password: string): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(
       `${environment.apiHost}/auth/login`,
       { username, password }
     ).pipe(
       tap(response => {
-        localStorage.setItem('access_token', response.accessToken);
+        if (response.requires2FA) {
+          this.tempToken = response.accessToken;
+          localStorage.setItem('temp_token', response.accessToken);
+        } else {
+          localStorage.setItem('access_token', response.accessToken);
+          this.tempToken = null;
+          localStorage.removeItem('temp_token');
+          this.authStateChanged.next();
+        }
       })
     );
   }
 
+  verify2FA(code: number): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(
+      `${environment.apiHost}/auth/2fa/verify`,
+      { code },
+      {
+        headers: {
+          Authorization: `Bearer ${this.tempToken || localStorage.getItem('temp_token')}`
+        }
+      }
+    ).pipe(
+      tap(response => {
+        localStorage.setItem('access_token', response.accessToken);
+        localStorage.removeItem('temp_token');
+        this.tempToken = null;
+        this.authStateChanged.next();
+      })
+    );
+  }
+
+  is2FARequired(): boolean {
+    return !!localStorage.getItem('temp_token');
+  }
+
+  getTempToken(): string | null {
+    return this.tempToken || localStorage.getItem('temp_token');
+  }
+
   logout() {
     localStorage.removeItem('access_token');
+    localStorage.removeItem('temp_token');
+    this.tempToken = null;
+    this.authStateChanged.next();
     this.router.navigate(['/login']);
   }
 
   getToken(): string | null {
-    return localStorage.getItem('access_token');
+    return localStorage.getItem('access_token') || localStorage.getItem('temp_token');
   }
 
   isLoggedIn(): boolean {
@@ -41,5 +89,9 @@ export class AuthService {
     } catch {
       return null;
     }
+  }
+
+  notify2FAChanged() {
+    this.authStateChanged.next();
   }
 }

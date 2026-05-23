@@ -1,0 +1,72 @@
+<div class="modal-overlay" (click)="cancel()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+
+    <ng-container *ngIf="mode === 'enable' && step === 'qr'">
+      <h2>Enable Two-Factor Authentication</h2>
+      <p class="subtitle">Scan this QR code with Google or Microsoft Authenticator.</p>
+
+      <div class="qr-wrapper">
+        <div *ngIf="loading" class="spinner"></div>
+        <img
+          *ngIf="!loading && qrUrl"
+          [src]="qrUrl"
+          width="200"
+          height="200"
+          alt="2FA QR Code"
+        />
+      </div>
+
+      <div *ngIf="secret" class="secret-box">
+        <span class="secret-label">Manual entry key:</span>
+        <code class="secret-value">{{ secret }}</code>
+      </div>
+
+      <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
+
+      <div class="actions">
+        <button class="btn-secondary" (click)="cancel()">Cancel</button>
+        <button class="btn-primary" (click)="proceedToVerify()" [disabled]="!qrUrl">
+          I've scanned it
+        </button>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="step === 'verify'">
+      <h2>{{ mode === 'enable' ? 'Confirm Setup' : 'Disable Two-Factor Authentication' }}</h2>
+      <p class="subtitle">
+        {{ mode === 'enable'
+          ? 'Enter the 6-digit code from your authenticator app.'
+          : 'Enter your current 6-digit code to confirm.' }}
+      </p>
+
+      <div class="code-input-wrapper">
+        <input
+          type="text"
+          inputmode="numeric"
+          maxlength="6"
+          placeholder="000000"
+          class="code-input"
+          [(ngModel)]="code"
+          (keyup.enter)="confirm()"
+          autofocus
+        />
+      </div>
+
+      <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
+
+      <div class="actions">
+        <button class="btn-secondary" (click)="cancel()">Cancel</button>
+        <button
+          class="btn-primary"
+          [class.btn-danger]="mode === 'disable'"
+          (click)="confirm()"
+          [disabled]="loading || code.length !== 6"
+        >
+          <span *ngIf="loading" class="spinner-sm"></span>
+          {{ mode === 'enable' ? 'Enable 2FA' : 'Disable 2FA' }}
+        </button>
+      </div>
+    </ng-container>
+
+  </div>
+</div>

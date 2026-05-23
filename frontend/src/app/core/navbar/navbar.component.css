@@ -47,3 +47,30 @@
 .logout-btn:hover {
   background-color: rgba(255, 255, 255, 0.1);
 }
+
+.twofa-btn {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.7);
+  padding: 0.4rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.twofa-btn:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.8);
+  color: #fdfcfb;
+}
+
+.twofa-btn.active {
+  background-color: rgba(211, 204, 204, 0.634);
+  border-color: #424242;
+  color: #1c1d1c;
+}
+
+.twofa-btn.active:hover {
+  background-color: rgba(203, 212, 203, 0.64);
+}
