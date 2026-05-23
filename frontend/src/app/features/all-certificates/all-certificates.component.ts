@@ -33,5 +33,32 @@
       this.loadCertificates();
     }
     
+    downloadCertificate(certId: number, format: 'pem' | 'cer'): void {
+      if (!certId) return;
+
+      const filename = `certificate-${certId}.${format}`;
+      const downloadMethod = format === 'pem' 
+        ? this.certificateService.downloadPem(certId) 
+        : this.certificateService.downloadCer(certId);
+
+      downloadMethod.subscribe({
+        next: (blob: Blob) => {
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = filename;
+          
+          document.body.appendChild(a);
+          a.click();
+          
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+        },
+        error: (err) => {
+          console.error(`error while downloading ${format.toUpperCase()} file:`, err);
+          alert('you do not have permission to download this certificate or the file is unavailable');
+        }
+      });
+    }
 
   }

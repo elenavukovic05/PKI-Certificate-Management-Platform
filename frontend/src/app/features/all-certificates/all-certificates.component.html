@@ -21,6 +21,7 @@
           <th>Valid From</th>
           <th>Valid To</th>
           <th>Extensions</th>
+          <th>Actions</th>
         </tr>
       </thead>
 
@@ -48,11 +49,10 @@
             </div>
           </td>
 
-          <!-- <td>
-            <button type="button" (click)="viewCertificate(cert)">
-              View
-            </button>
-          </td> -->
+          <td>
+            <button type="button" (click)="downloadCertificate(cert.id, 'pem')"> PEM </button>
+            <button type="button" (click)="downloadCertificate(cert.id, 'cer')"> CER </button>
+          </td>
         </tr>
       </tbody>
     </table>
