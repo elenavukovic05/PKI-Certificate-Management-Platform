@@ -20,6 +20,16 @@
     <a *ngIf="role === 'ADMIN'" routerLink="/all-certificates" routerLinkActive="active">
       All Certificates
     </a>
+        <button class="twofa-btn" (click)="toggle2FA()" [class.active]="twoFactorEnabled">
+      {{ twoFactorEnabled ? 'Disable 2FA' : 'Enable 2FA' }}
+    </button>
     <button class="logout-btn" (click)="logout()">Logout</button>
   </div>
 </nav>
+
+<app-two-factor-modal
+  *ngIf="show2FAModal"
+  [mode]="modalMode"
+  (closed)="on2FAModalClose()"
+  (success)="on2FASuccess($event)"
+></app-two-factor-modal>

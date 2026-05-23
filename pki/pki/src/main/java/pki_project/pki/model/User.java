@@ -55,6 +55,13 @@ public class User implements UserDetails {
     @Column(name = "activation_token_expires_at")
     private Date activationTokenExpiresAt;
 
+    @Column(name = "two_factor_enabled", nullable = false)
+    private boolean twoFactorEnabled = false;
+
+    @JsonIgnore
+    @Column(name = "two_factor_secret")
+    private String twoFactorSecret; // totp code, we save it only after qr activation
+
     public User() {
     }
 
@@ -173,4 +180,21 @@ public class User implements UserDetails {
     public void setActivationTokenExpiresAt(Date activationTokenExpiresAt) {
         this.activationTokenExpiresAt = activationTokenExpiresAt;
     }
+
+    public boolean isTwoFactorEnabled() {
+        return twoFactorEnabled;
+    }
+
+    public void setTwoFactorEnabled(boolean twoFactorEnabled) {
+        this.twoFactorEnabled = twoFactorEnabled;
+    }
+
+    public String getTwoFactorSecret() {
+        return twoFactorSecret;
+    }
+
+    public void setTwoFactorSecret(String twoFactorSecret) {
+        this.twoFactorSecret = twoFactorSecret;
+    }
+
 }
