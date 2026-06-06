@@ -14,7 +14,7 @@ public class RefreshTokenEntity {
     @Column(nullable=false, unique = true)
     private String tokenString;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
@@ -30,6 +30,10 @@ public class RefreshTokenEntity {
     private boolean isUsed;
 
     private boolean isRevoked;
+
+    public RefreshTokenEntity(){
+
+    }
 
     public RefreshTokenEntity(String tokenString, User user, String familyId, Date createdAt, Date expireAt, boolean isUsed, boolean isRevoked) {
         this.tokenString = tokenString;

@@ -9,23 +9,34 @@ export class AuthService {
   constructor(private http: HttpClient, private router: Router) {}
 
   login(username: string, password: string) {
-    return this.http.post<{ accessToken: string }>(
+    return this.http.post<{ accessToken: string, refreshToken: string }>(
       `${environment.apiHost}/auth/login`,
       { username, password }
     ).pipe(
       tap(response => {
         localStorage.setItem('access_token', response.accessToken);
+        localStorage.setItem('refresh_token', response.refreshToken )
       })
     );
   }
 
   logout() {
+    const refreshToken = this.getRefreshToken();
     localStorage.removeItem('access_token');
-    this.router.navigate(['/login']);
+    localStorage.removeItem('refresh_token');
+    this.http.post(`${environment.apiHost}/auth/logout`, { refreshToken })
+      .subscribe({
+        next: () => this.router.navigate(['/login']),
+        error: () => this.router.navigate(['/login'])
+      });
   }
 
   getToken(): string | null {
     return localStorage.getItem('access_token');
+  }
+
+  getRefreshToken(): string | null {
+    return localStorage.getItem('refresh_token');
   }
 
   isLoggedIn(): boolean {
@@ -41,5 +52,18 @@ export class AuthService {
     } catch {
       return null;
     }
+  }
+
+  refreshTokens() {
+    const refreshToken = this.getRefreshToken();
+    return this.http.post< {accessToken: string, refreshToken: string} >(
+      `${environment.apiHost}/auth/refresh`,
+      { refreshToken }
+    ).pipe(
+      tap(response => {
+        localStorage.setItem('access_token', response.accessToken);
+        localStorage.setItem('refresh_token', response.refreshToken);
+      })
+    )
   }
 }

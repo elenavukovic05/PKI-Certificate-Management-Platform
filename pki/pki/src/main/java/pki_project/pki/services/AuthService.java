@@ -11,6 +11,7 @@ import pki_project.pki.model.RefreshTokenEntity;
 import pki_project.pki.model.User;
 import pki_project.pki.security.JwtUtil;
 
+import java.util.Date;
 import java.util.UUID;
 
 @Service
@@ -62,6 +63,12 @@ public class AuthService {
         String refreshToken = refreshTokenService.generateToken(refreshTokenEntity.getUser(), refreshTokenEntity.getFamilyId());
 
         return new LoginResponseDTO(accessToken, refreshToken);
+    }
+
+    public void logout(RefreshRequestDTO request) {
+        RefreshTokenEntity refreshTokenEntity = refreshTokenService.findByToken(request.getRefreshToken());
+
+        refreshTokenService.setFamilyInvalid(refreshTokenEntity);
     }
 
 }

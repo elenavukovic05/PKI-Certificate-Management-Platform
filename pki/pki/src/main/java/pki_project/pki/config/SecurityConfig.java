@@ -49,7 +49,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/v1/auth/login",
-                                "/error", "/api/v1/auth/refresh"
+                                "/error", "/api/v1/auth/refresh", "/api/v1/auth/logout"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
