@@ -125,4 +125,39 @@ public class KeyManagementService {
             throw new RuntimeException("failed to decrypt private key with org key" + e.getMessage(), e);
         }
     }
+
+    public String encryptText(String plainText) {
+        try {
+            byte[] iv = new byte[GCM_IV_LENGTH];
+            new SecureRandom().nextBytes(iv);
+
+            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+            cipher.init(Cipher.ENCRYPT_MODE, masterKey, new GCMParameterSpec(GCM_TAG_LENGTH, iv));
+            byte[] encrypted = cipher.doFinal(plainText.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+
+            byte[] result = new byte[GCM_IV_LENGTH + encrypted.length];
+            System.arraycopy(iv, 0, result, 0, GCM_IV_LENGTH);
+            System.arraycopy(encrypted, 0, result, GCM_IV_LENGTH, encrypted.length);
+
+            return Base64.getEncoder().encodeToString(result);
+        } catch (Exception e) {
+            throw new RuntimeException("failed to encrypt 2FA secret", e);
+        }
+    }
+
+    public String decryptText(String encryptedTextBase64) {
+        try {
+            byte[] all = Base64.getDecoder().decode(encryptedTextBase64);
+            byte[] iv = Arrays.copyOfRange(all, 0, GCM_IV_LENGTH);
+            byte[] encrypted = Arrays.copyOfRange(all, GCM_IV_LENGTH, all.length);
+
+            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+            cipher.init(Cipher.DECRYPT_MODE, masterKey, new GCMParameterSpec(GCM_TAG_LENGTH, iv));
+            byte[] plainBytes = cipher.doFinal(encrypted);
+
+            return new String(plainBytes, java.nio.charset.StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            throw new RuntimeException("failed to decrypt 2FA secret: " + e.getMessage(), e);
+        }
+    }
 }
