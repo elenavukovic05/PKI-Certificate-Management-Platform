@@ -36,6 +36,15 @@ public class AuthService {
 
         User user = (User) authentication.getPrincipal();
 
+        if (user.isTwoFactorEnabled()) {
+            String tempToken = jwtUtil.generateTemp2FAToken(
+                    user.getUsername(),
+                    user.getRole().name()
+            );
+            // requires2FA = true we need entering code on front page
+            return new LoginResponseDTO(tempToken, null, true);
+        }
+
         String token = jwtUtil.generateToken(
                 user.getUsername(),
                 user.getRole().name()
@@ -43,7 +52,7 @@ public class AuthService {
 
         String refreshToken = refreshTokenService.generateToken(user, UUID.randomUUID().toString());
 
-        return new LoginResponseDTO(token, refreshToken);
+        return new LoginResponseDTO(token, refreshToken, false);
     }
 
     public LoginResponseDTO refreshTokens(RefreshRequestDTO request){
@@ -62,7 +71,7 @@ public class AuthService {
 
         String refreshToken = refreshTokenService.generateToken(refreshTokenEntity.getUser(), refreshTokenEntity.getFamilyId());
 
-        return new LoginResponseDTO(accessToken, refreshToken);
+        return new LoginResponseDTO(accessToken, refreshToken, false);
     }
 
     public void logout(RefreshRequestDTO request) {

@@ -6,6 +6,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import pki_project.pki.dto.ActivateCAUserDTO;
 import pki_project.pki.dto.CAUserDTO;
 import pki_project.pki.dto.UserDTO;
 import pki_project.pki.model.Organization;
@@ -14,13 +15,19 @@ import pki_project.pki.model.enums.Role;
 import pki_project.pki.repositories.OrganizationRepository;
 import pki_project.pki.repositories.UserRepository;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
 
+    @Autowired
+    EmailService emailService;
     @Autowired
     OrganizationRepository organizationRepository;
     @Autowired
@@ -38,7 +45,16 @@ public class UserService implements UserDetailsService {
         }
         User newUser = new User(caUser.getUsername(), encodedPassword, caUser.getFirstName(),
                 caUser.getLastName(), null, Role.CA_USER, organization);
+        String token = UUID.randomUUID().toString();
+        newUser.setEnabled(false);
+        newUser.setActivationToken(token);
+        newUser.setActivationTokenExpiresAt(
+                Date.from(Instant.now().plus(24, ChronoUnit.HOURS))
+        );
+
         userRepository.save(newUser);
+
+        emailService.sendCAUserActivationEmail(newUser.getUsername(), token);
     }
 
     @Override
@@ -64,5 +80,21 @@ public class UserService implements UserDetailsService {
         }
 
         return result;
+    }
+
+    public void activateCAUser(ActivateCAUserDTO dto) {
+        User user = userRepository.findByActivationToken(dto.getToken())
+                .orElseThrow(() -> new RuntimeException("Invalid activation token"));
+
+        if (user.getActivationTokenExpiresAt().before(new Date())) {
+            throw new RuntimeException("Activation token expired");
+        }
+
+        user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
+        user.setEnabled(true);
+        user.setActivationToken(null);
+        user.setActivationTokenExpiresAt(null);
+
+        userRepository.save(user);
     }
 }

@@ -14,16 +14,23 @@
   
   <div class="cert-header">
     <h2>Certificate Viewer: {{ extractField(selectedCert?.subjectName || '', 'CN') }}</h2>
+    <div class="download-actions">
+      <button class="btn-download" (click)="downloadCertificate('pem')"> Download PEM </button>
+      <button class="btn-download primary" (click)="downloadCertificate('cer')"> Download CER </button>
+    </div>
   </div>
 
   <div class="tabs">
-    <button [class.active]="activeTab === 'general'" (click)="setTab('general')">General</button>
-    <button [class.active]="activeTab === 'details'" (click)="setTab('details')">Details</button>
+    <button [class.active]="activeTab === 'general'" (click)="setTab('general')">
+      General
+    </button>
+    <button [class.active]="activeTab === 'details'" (click)="setTab('details')">
+      Details
+    </button>
   </div>
 
   <div class="cert-body" *ngIf="activeTab === 'general'">
     
-    <!-- Issued To -->
     <div class="info-group">
       <h3>Issued To</h3>
       <div class="info-row">
@@ -40,7 +47,6 @@
       </div>
     </div>
 
-    <!-- Issued By -->
     <div class="info-group">
       <h3>Issued By</h3>
       <div class="info-row">
@@ -57,7 +63,6 @@
       </div>
     </div>
 
-    <!-- Validity Period -->
     <div class="info-group">
       <h3>Validity Period</h3>
       <div class="info-row">
@@ -70,10 +75,8 @@
       </div>
     </div>
 
-
   </div>
 
-  <!-- Tab: Details -->
   <div class="cert-body" *ngIf="activeTab === 'details'">
     <div class="info-group borderless">
       <h3>Certificate Data (PEM)</h3>

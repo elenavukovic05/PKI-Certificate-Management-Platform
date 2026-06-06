@@ -129,6 +129,7 @@ export class CreateCertificatesComponent {
   loadIssuers() {
     this.certificateService.getCACertificates().subscribe({
       next: (data) => {
+        console.log('ISSUERS:', data);
         this.issuers = data;
       },
       error: (err) => {

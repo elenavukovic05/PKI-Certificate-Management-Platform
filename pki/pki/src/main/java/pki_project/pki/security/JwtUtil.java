@@ -32,6 +32,23 @@ public class JwtUtil {
                 .compact();
     }
 
+    public String generateTemp2FAToken(String username, String role) {
+        long fiveMinutes = 5 * 60 * 1000L;
+        return Jwts.builder()
+                .subject(username)
+                .claim("role", role)
+                .claim("requires2FA", true)
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + fiveMinutes))
+                .signWith(getSigningKey())
+                .compact();
+    }
+
+    public boolean requiresTwoFactor(String token) {
+        Boolean val = extractClaims(token).get("requires2FA", Boolean.class);
+        return Boolean.TRUE.equals(val);
+    }
+
     public String extractUsername(String token) {
         return extractClaims(token).getSubject();
     }

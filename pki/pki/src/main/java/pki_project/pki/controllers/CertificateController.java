@@ -1,5 +1,6 @@
 package pki_project.pki.controllers;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -13,6 +14,7 @@ import pki_project.pki.dto.CertificatePreviewDTO;
 import pki_project.pki.dto.CertificateRequestDTO;
 import pki_project.pki.model.CertificateEntity;
 import pki_project.pki.model.User;
+import pki_project.pki.services.CertificateDownloadService;
 import pki_project.pki.services.CertificateService;
 
 import java.util.List;
@@ -26,6 +28,9 @@ public class CertificateController {
 
     @Autowired
     private UserDetailsService userDetailsService;
+
+    @Autowired
+    private CertificateDownloadService downloadService;
 
     @PostMapping(value = "/create-certificate", consumes = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasRole('ADMIN')")
@@ -78,6 +83,26 @@ public class CertificateController {
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<CertificatePreviewDTO>> getMyCertificates() {
         return ResponseEntity.ok(certificateService.getMyCertificates());
+    }
+
+    @GetMapping("/{id}/download/pem")
+    public ResponseEntity<byte[]> downloadPem(@PathVariable Long id) {
+        String pem = downloadService.downloadAsPem(id);
+ 
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"certificate-" + id + ".pem\"")
+                .contentType(MediaType.TEXT_PLAIN)
+                .body(pem.getBytes());
+    }
+
+    @GetMapping("/{id}/download/cer")
+    public ResponseEntity<byte[]> downloadCer(@PathVariable Long id) {
+        byte[] derBytes = downloadService.downloadAsCer(id);
+ 
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"certificate-" + id + ".cer\"")
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(derBytes);
     }
 
 }

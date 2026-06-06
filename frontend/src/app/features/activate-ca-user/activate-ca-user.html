@@ -1,0 +1,33 @@
+<form [formGroup]="activationForm" (ngSubmit)="onSubmit()" class="form-container">
+  <h1>Activate CA Account</h1>
+
+  <div *ngIf="errorMessage" class="alert alert-error">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="successMessage" class="alert alert-success">
+    {{ successMessage }}
+  </div>
+
+  <label>
+    New password
+    <input type="password" formControlName="newPassword" placeholder="New password" />
+
+    <div *ngIf="newPassword.touched && newPassword.invalid" class="error">
+      Password must have at least 8 characters
+    </div>
+  </label>
+
+  <label>
+    Confirm password
+    <input type="password" formControlName="confirmPassword" placeholder="Confirm password" />
+
+    <div *ngIf="confirmPassword.touched && confirmPassword.invalid" class="error">
+      Confirm password is required
+    </div>
+  </label>
+
+  <button type="submit" [disabled]="!token">
+    Activate account
+  </button>
+</form>
