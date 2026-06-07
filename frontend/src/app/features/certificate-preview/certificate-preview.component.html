@@ -17,6 +17,7 @@
     <div class="download-actions">
       <button class="btn-download" (click)="downloadCertificate('pem')"> Download PEM </button>
       <button class="btn-download primary" (click)="downloadCertificate('cer')"> Download CER </button>
+      <button class="btn-download" (click)="openPkcs12Modal()"> Download PKCS12 </button>
     </div>
   </div>
 
@@ -84,4 +85,21 @@
     </div>
   </div>
 
+</div>
+
+<!-- download pkcs12 modal -->
+<div *ngIf="showPkcs12Modal" class="modal-overlay">
+    <div class="modal">
+        <h3>Enter password for PKCS12</h3>
+        <input 
+            [type]="showPassword ? 'text' : 'password'" 
+            [(ngModel)]="pkcs12Password" 
+            placeholder="Password"/>
+        <label>
+            <input type="checkbox" (change)="showPassword = !showPassword"/>
+            Show password
+        </label>
+        <button (click)="confirmPkcs12Download()">Download</button>
+        <button (click)="showPkcs12Modal = false">Cancel</button>
+    </div>
 </div>
