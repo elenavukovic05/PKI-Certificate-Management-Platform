@@ -51,3 +51,28 @@ export interface CertificateRequestDTO {
 export interface Pkcs12RequestDTO {
   password: string
 }
+export interface CsrRequest {
+  csrPem: string;
+  issuerId: number;
+  startDate: string;
+  endDate: string;
+}
+
+export interface AutogenerateRequest {
+  commonName: string;
+  name: string;
+  lastName: string;
+  organization: string;
+  organizationalUnit: string;
+  country: string;
+  email: string;
+  issuerId: number;
+  startDate: string;
+  endDate: string;
+}
+
+export interface AutogenerateResponse {
+  certificateId: number;
+  certificatePem: string;
+  privateKeyPem: string;
+}

@@ -11,12 +11,9 @@ import pki_project.pki.dto.TwoFactorVerifyDTO;
 import pki_project.pki.model.User;
 import pki_project.pki.repositories.UserRepository;
 import pki_project.pki.security.JwtUtil;
-<<<<<<< HEAD
 import pki_project.pki.services.KeyManagementService;
-=======
 import pki_project.pki.services.AuthService;
 import pki_project.pki.services.RefreshTokenService;
->>>>>>> origin/develop
 import pki_project.pki.services.TwoFactorService;
 
 import java.util.Map;
