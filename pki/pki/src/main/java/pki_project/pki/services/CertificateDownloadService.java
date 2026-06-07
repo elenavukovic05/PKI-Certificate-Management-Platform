@@ -12,6 +12,13 @@ import pki_project.pki.model.enums.Role;
 import pki_project.pki.repositories.CertificateRepository;
 import pki_project.pki.model.User;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.security.KeyStore;
+import java.security.PrivateKey;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.util.Base64;
 
 @Service
@@ -20,6 +27,8 @@ public class CertificateDownloadService {
     private CertificateRepository certificateRepository;
     @Autowired
     private UserDetailsService userDetailsService;
+    @Autowired
+    private KeyManagementService keyManagementService;
 
     public String downloadAsPem(Long certificateId) {
         CertificateEntity cert = findCertificate(certificateId);
@@ -71,6 +80,46 @@ public class CertificateDownloadService {
                 throw new RuntimeException("access denied: unknown role");
         }
         return certificateEntity;
+    }
+
+    public byte[] downloadAsPkcs12(Long id, String password){
+        CertificateEntity certificateEntity = findCertificate(id);
+        if (certificateEntity.getEncryptedPrivateKey() == null) {
+            throw new RuntimeException("Private key not available for this certificate");
+        }
+
+        PrivateKey privateKey = keyManagementService.decryptPrivateKey(
+                certificateEntity.getEncryptedPrivateKey(), certificateEntity.getOrganization());
+
+        String pem = certificateEntity.getCertificatePem();
+
+        try {
+            String cleanPem = pem
+                    .replace("-----BEGIN CERTIFICATE-----", "")
+                    .replace("-----END CERTIFICATE-----", "")
+                    .replaceAll("\\s", "");
+            byte[] decoded = java.util.Base64.getDecoder().decode(cleanPem);
+            CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
+            X509Certificate x509 = (X509Certificate) certificateFactory.generateCertificate(
+                    new ByteArrayInputStream(decoded)
+            );
+
+            KeyStore keyStore = KeyStore.getInstance("PKCS12");
+            keyStore.load(null, null);
+
+            keyStore.setKeyEntry(
+                    "certificate",
+                    privateKey,
+                    password.toCharArray(),
+                    new Certificate[]{x509}
+            );
+
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            keyStore.store(outputStream, password.toCharArray());
+            return outputStream.toByteArray();
+        } catch (Exception e){
+            throw new RuntimeException("Failed to create PKCS12", e);
+        }
     }
 
 }
