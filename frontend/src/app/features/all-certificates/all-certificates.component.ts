@@ -3,6 +3,7 @@
   import { CertificatePreviewDTO } from '../../core/models/certificate.model';
   import { FormsModule, ReactiveFormsModule } from '@angular/forms';
   import { CommonModule } from '@angular/common';
+import { AuthService } from '../../core/services/auth.service';
 
   @Component({
     selector: 'app-all-certificates',
@@ -12,8 +13,8 @@
   })
   export class AllCertificatesComponent {
 
-    constructor(private certificateService : CertificateService,private cdr: ChangeDetectorRef){}
-    
+    constructor(private certificateService : CertificateService, private cdr: ChangeDetectorRef, private authService : AuthService){}
+    role: string | null = null;
     errorMessage : string = '';
     certificates : CertificatePreviewDTO[] = [];
 
@@ -23,18 +24,33 @@
     selectedCertId: number | null = null;
 
     loadCertificates(){
-      this.certificateService.getAllCertificates().subscribe({
-        next: (data) => {
-          this.certificates = data;
-          this.cdr.detectChanges();
-        },
-        error: () => {
-          this.errorMessage = 'Failed to load users.';
-          this.cdr.detectChanges();
-        }
-      });
+      if (this.role == 'ADMIN'){
+        this.certificateService.getAllCertificates().subscribe({
+          next: (data) => {
+            this.certificates = data;
+            this.cdr.detectChanges();
+          },
+          error: () => {
+            this.errorMessage = 'Failed to load users.';
+            this.cdr.detectChanges();
+          }
+        });
+      } else if (this.role == 'CA_USER'){
+        this.certificateService.getOrganizationCertificates().subscribe({
+          next: (data) => {
+            this.certificates = data;
+            this.cdr.detectChanges();
+          },
+          error: () => {
+            this.errorMessage = 'Failed to load ceritificates.';
+            this.cdr.detectChanges();
+          }
+        });
+      }
+      
     }
     ngOnInit(){
+      this.role = this.authService.getRole();
       this.loadCertificates();
     }
     
