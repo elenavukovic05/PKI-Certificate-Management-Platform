@@ -22,6 +22,7 @@ import java.security.Security;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Date;
 
 @Component
 public class CertificateGenerator {
@@ -95,4 +96,41 @@ public class CertificateGenerator {
         }
         return null;
     }
+
+    public static X509Certificate generateCertificateFromSubjectPublicKey(
+        Subject subject, Issuer issuer,
+        Date startDate, Date endDate,
+        BigInteger serialNumber,
+        boolean isCA, boolean digitalSignature,
+        boolean keyEncipherment, boolean keyCertSign, boolean crlSign) {
+    try {
+        JcaContentSignerBuilder builder = new JcaContentSignerBuilder("SHA256WithRSAEncryption");
+        builder = builder.setProvider("BC");
+        ContentSigner contentSigner = builder.build(issuer.getPrivateKey());
+
+        X509v3CertificateBuilder certGen = new JcaX509v3CertificateBuilder(
+                issuer.getX500Name(),
+                serialNumber,
+                startDate,
+                endDate,
+                subject.getX500Name(),
+                subject.getPublicKey()
+        );
+
+        certGen.addExtension(Extension.basicConstraints, true, new BasicConstraints(isCA));
+
+        int keyUsageBits = 0;
+        if (digitalSignature) keyUsageBits |= KeyUsage.digitalSignature;
+        if (keyEncipherment) keyUsageBits |= KeyUsage.keyEncipherment;
+        if (keyCertSign) keyUsageBits |= KeyUsage.keyCertSign;
+        if (crlSign) keyUsageBits |= KeyUsage.cRLSign;
+        certGen.addExtension(Extension.keyUsage, true, new KeyUsage(keyUsageBits));
+
+        X509CertificateHolder certHolder = certGen.build(contentSigner);
+        return new JcaX509CertificateConverter().setProvider("BC").getCertificate(certHolder);
+
+    } catch (Exception e) {
+        throw new RuntimeException("error while issuing certificate from csr", e);
+    }
+}
 }

@@ -209,7 +209,7 @@ public class CertificateService {
             return true;
         }
     }
-    private String certificateToPem(X509Certificate certificate) {
+    public String certificateToPem(X509Certificate certificate) {
         try {
             String base64 = java.util.Base64.getMimeEncoder(64, "\n".getBytes())
                     .encodeToString(certificate.getEncoded());
