@@ -7,6 +7,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.*;
 import pki_project.pki.dto.LoginRequestDTO;
 import pki_project.pki.dto.LoginResponseDTO;
+import pki_project.pki.dto.RefreshRequestDTO;
 import pki_project.pki.services.AuthService;
 
 @RestController
@@ -25,6 +26,26 @@ public class AuthController {
             LoginResponseDTO response = authService.login(request);
             return ResponseEntity.ok(response);
         } catch (BadCredentialsException e){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<?> login (@Valid @RequestBody RefreshRequestDTO request){
+        try{
+            LoginResponseDTO response = authService.refreshTokens(request);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout (@Valid @RequestBody RefreshRequestDTO request) {
+        try{
+            authService.logout(request);
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        } catch (RuntimeException e){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }

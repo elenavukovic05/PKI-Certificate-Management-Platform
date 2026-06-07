@@ -11,10 +11,13 @@ import pki_project.pki.dto.TwoFactorVerifyDTO;
 import pki_project.pki.model.User;
 import pki_project.pki.repositories.UserRepository;
 import pki_project.pki.security.JwtUtil;
+import pki_project.pki.services.AuthService;
+import pki_project.pki.services.RefreshTokenService;
 import pki_project.pki.services.TwoFactorService;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/auth/2fa")
@@ -31,6 +34,9 @@ public class TwoFactorController {
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+    private RefreshTokenService refreshTokenService;
 
     @PostMapping("/setup")
     public ResponseEntity<TwoFactorSetUpDTO> setup2FA() {
@@ -88,11 +94,13 @@ public class TwoFactorController {
         }
         
         String token = jwtUtil.generateToken(user.getUsername(), user.getRole().name());
+        String refreshToken = refreshTokenService.generateToken(user, UUID.randomUUID().toString());
         
         Map<String, Object> successResponse = new HashMap<>();
         successResponse.put("accessToken", token);
         successResponse.put("requires2FA", false);
         successResponse.put("success", true);
+        successResponse.put("refreshToken", refreshToken);
         return ResponseEntity.ok(successResponse);
     }
 
