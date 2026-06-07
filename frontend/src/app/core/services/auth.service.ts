@@ -7,6 +7,7 @@ import { environment } from '../../../env/environment';
 
 export interface LoginResponse {
   accessToken: string;
+  refreshToken: string | null;
   requires2FA: boolean;
 }
 
@@ -29,6 +30,9 @@ export class AuthService {
           localStorage.setItem('temp_token', response.accessToken);
         } else {
           localStorage.setItem('access_token', response.accessToken);
+          if (response.refreshToken) {
+            localStorage.setItem('refresh_token', response.refreshToken);
+          }
           this.tempToken = null;
           localStorage.removeItem('temp_token');
           this.authStateChanged.next();
@@ -49,6 +53,9 @@ export class AuthService {
     ).pipe(
       tap(response => {
         localStorage.setItem('access_token', response.accessToken);
+        if (response.refreshToken) {
+          localStorage.setItem('refresh_token', response.refreshToken);
+        }
         localStorage.removeItem('temp_token');
         this.tempToken = null;
         this.authStateChanged.next();
@@ -65,15 +72,25 @@ export class AuthService {
   }
 
   logout() {
+    const refreshToken = this.getRefreshToken();
     localStorage.removeItem('access_token');
     localStorage.removeItem('temp_token');
     this.tempToken = null;
     this.authStateChanged.next();
-    this.router.navigate(['/login']);
+    localStorage.removeItem('refresh_token');
+    this.http.post(`${environment.apiHost}/auth/logout`, { refreshToken })
+      .subscribe({
+        next: () => this.router.navigate(['/login']),
+        error: () => this.router.navigate(['/login'])
+      });
   }
 
   getToken(): string | null {
     return localStorage.getItem('access_token') || localStorage.getItem('temp_token');
+  }
+
+  getRefreshToken(): string | null {
+    return localStorage.getItem('refresh_token');
   }
 
   isLoggedIn(): boolean {
@@ -93,5 +110,20 @@ export class AuthService {
 
   notify2FAChanged() {
     this.authStateChanged.next();
+  }
+
+  refreshTokens() {
+    const refreshToken = this.getRefreshToken();
+    return this.http.post< LoginResponse>(
+      `${environment.apiHost}/auth/refresh`,
+      { refreshToken }
+    ).pipe(
+      tap(response => {
+        localStorage.setItem('access_token', response.accessToken);
+        if (response.refreshToken) {
+          localStorage.setItem('refresh_token', response.refreshToken);
+        }
+      })
+    )
   }
 }

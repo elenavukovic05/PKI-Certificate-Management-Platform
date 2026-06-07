@@ -47,3 +47,7 @@ export interface CertificateRequestDTO {
   type: string;
   ownerId?: number | null;
 }
+
+export interface Pkcs12RequestDTO {
+  password: string
+}

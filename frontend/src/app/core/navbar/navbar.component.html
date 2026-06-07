@@ -5,6 +5,9 @@
     <a *ngIf="role === 'CA_USER'" routerLink="/issue-certificate" routerLinkActive="active">
       Issue Certificate
     </a>
+    <a *ngIf="role === 'CA_USER'" routerLink="/all-certificates" routerLinkActive="active">
+      Organizations certificates
+    </a>
     <a *ngIf="role === 'ADMIN'" routerLink="/create-certificates" routerLinkActive="active">
       Issue Certificate
     </a>

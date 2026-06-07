@@ -16,6 +16,7 @@ import pki_project.pki.dto.CACertificatePreviewDTO;
 import pki_project.pki.dto.CertificatePreviewDTO;
 import pki_project.pki.dto.CertificateRequestDTO;
 import pki_project.pki.dto.CsrRequestDTO;
+import pki_project.pki.dto.Pkcs12RequestDTO;
 import pki_project.pki.model.CertificateEntity;
 import pki_project.pki.model.User;
 import pki_project.pki.services.CertificateDownloadService;
@@ -135,4 +136,16 @@ public class CertificateController {
         }
     }
 
+    @PostMapping("/{id}/download/pkcs12")
+    public ResponseEntity<byte[]> downloadPkcs12(@PathVariable Long id, @RequestBody Pkcs12RequestDTO request){
+        try{
+            byte[] pkcs12Bytes = downloadService.downloadAsPkcs12(id, request.getPassword());
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"certificate-" + id + ".p12\"")
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .body(pkcs12Bytes);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage().getBytes());
+        }
+    }
 }

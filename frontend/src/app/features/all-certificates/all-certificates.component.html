@@ -52,9 +52,27 @@
           <td>
             <button type="button" (click)="downloadCertificate(cert.id, 'pem')"> PEM </button>
             <button type="button" (click)="downloadCertificate(cert.id, 'cer')"> CER </button>
+            <button type="button" (click)="openPkcs12Modal(cert.id)"> PKCS12 </button>
           </td>
         </tr>
       </tbody>
     </table>
   </div>
+</div>
+
+<!-- download pkcs12 modal -->
+<div *ngIf="showPkcs12Modal" class="modal-overlay">
+    <div class="modal">
+        <h3>Enter password for PKCS12</h3>
+        <input 
+            [type]="showPassword ? 'text' : 'password'" 
+            [(ngModel)]="pkcs12Password" 
+            placeholder="Password"/>
+        <label>
+            <input type="checkbox" (change)="showPassword = !showPassword"/>
+            Show password
+        </label>
+        <button (click)="confirmPkcs12Download()">Download</button>
+        <button (click)="showPkcs12Modal = false">Cancel</button>
+    </div>
 </div>

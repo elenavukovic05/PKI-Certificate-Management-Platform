@@ -2,10 +2,11 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CertificatePreviewDTO } from '../../core/models/certificate.model';
 import { CommonModule } from '@angular/common';
 import { CertificateService } from '../../core/services/certificate.service';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-certificate-preview',
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './certificate-preview.component.html',
   styleUrls: ['./certificate-preview.component.css']
 })
@@ -13,6 +14,10 @@ export class CertificatePreviewComponent implements OnInit {
   certificates: CertificatePreviewDTO[] = [];
   selectedCert: CertificatePreviewDTO | null = null;
   activeTab: 'general' | 'details' = 'general';
+
+  showPkcs12Modal = false;
+  pkcs12Password = '';
+  showPassword = false;
 
   constructor(private certService: CertificateService, private cdr: ChangeDetectorRef) {}
 
@@ -80,4 +85,42 @@ export class CertificatePreviewComponent implements OnInit {
       }
     });
   }
+
+  openPkcs12Modal(): void {
+    if (!this.selectedCert) return;
+
+    this.pkcs12Password = '';
+    this.showPkcs12Modal = true;
+    this.cdr.detectChanges();
+  }
+
+  confirmPkcs12Download(): void {
+    if (!this.selectedCert || !this.pkcs12Password.trim()) return;
+
+    const certId = this.selectedCert.id;
+
+    this.certService.downloadPkcs12(
+        certId, 
+        { password: this.pkcs12Password }
+    ).subscribe({
+        next: (blob: Blob) => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `certificate-${certId}.p12`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            this.showPkcs12Modal = false;
+            this.pkcs12Password = '';
+            this.cdr.detectChanges();
+          },
+          error: () => {
+              alert('Failed to download PKCS12');
+              this.cdr.detectChanges();
+          }
+      });
+    }
+
 }
