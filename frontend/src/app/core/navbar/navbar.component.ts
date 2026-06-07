@@ -51,10 +51,16 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   private refreshAll() {
     this.role = this.authService.getRole();
-    this.fetch2FAStatus();
+    if (this.authService.getToken()){
+      this.fetch2FAStatus();
+    }
   }
 
   fetch2FAStatus() {
+     if (!this.authService.getToken()) {
+        return;
+    }
+
     if (this.authService.is2FARequired()) {
       console.log('2FA flow active, setting twoFactorEnabled to true');
       this.twoFactorEnabled = true;
