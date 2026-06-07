@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { CACertificatePreviewDTO, CertificatePreviewDTO, CertificateRequestDTO } from '../models/certificate.model';
+import { CACertificatePreviewDTO, CertificatePreviewDTO, CertificateRequestDTO, Pkcs12RequestDTO } from '../models/certificate.model';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../env/environment';
 import { OrganizationDTO } from '../models/organization.model';
@@ -55,6 +55,12 @@ export class CertificateService {
 
   downloadCer(id: number): Observable<Blob> {
     return this.http.get(`${environment.apiHost}/certificates/${id}/download/cer`, {
+      responseType: 'blob'
+    });
+  }
+
+  downloadPkcs12(id: number, dto: Pkcs12RequestDTO) : Observable<Blob> {
+    return this.http.post(`${environment.apiHost}/certificates/${id}/download/pkcs12`, dto, {
       responseType: 'blob'
     });
   }
