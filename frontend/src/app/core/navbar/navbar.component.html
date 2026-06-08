@@ -20,6 +20,9 @@
     <a *ngIf="role === 'USER'" routerLink="/my-certificates" routerLinkActive="active">
       My Certificates
     </a>
+    <a *ngIf="role === 'USER'" routerLink="/csr" routerLinkActive="active">
+      Request Certificate
+    </a>
     <a *ngIf="role === 'ADMIN'" routerLink="/all-certificates" routerLinkActive="active">
       All Certificates
     </a>

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { CACertificatePreviewDTO, CertificatePreviewDTO, CertificateRequestDTO, Pkcs12RequestDTO } from '../models/certificate.model';
+import { AutogenerateRequest, AutogenerateResponse, CACertificatePreviewDTO, CertificatePreviewDTO, CertificateRequestDTO, CsrRequest, Pkcs12RequestDTO } from '../models/certificate.model';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../env/environment';
 import { OrganizationDTO } from '../models/organization.model';
@@ -63,5 +63,17 @@ export class CertificateService {
     return this.http.post(`${environment.apiHost}/certificates/${id}/download/pkcs12`, dto, {
       responseType: 'blob'
     });
+  }
+
+  getAvailableCAs() {
+    return this.http.get<CACertificatePreviewDTO[]>(`${environment.apiHost}/certificates/ca-certificates`);
+  }
+
+  uploadCsr(request: CsrRequest) {
+    return this.http.post<string>(`${environment.apiHost}/certificates/csr/upload`, request, { responseType: 'text' as 'json' });
+  }
+
+  autogenerate(request: AutogenerateRequest) {
+    return this.http.post<AutogenerateResponse>(`${environment.apiHost}/certificates/csr/autogenerate`, request);
   }
 }

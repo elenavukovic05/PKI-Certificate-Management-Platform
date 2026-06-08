@@ -9,14 +9,19 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.*;
+
+import pki_project.pki.dto.AutogenerateRequestDTO;
+import pki_project.pki.dto.AutogenerateResponseDTO;
 import pki_project.pki.dto.CACertificatePreviewDTO;
 import pki_project.pki.dto.CertificatePreviewDTO;
 import pki_project.pki.dto.CertificateRequestDTO;
+import pki_project.pki.dto.CsrRequestDTO;
 import pki_project.pki.dto.Pkcs12RequestDTO;
 import pki_project.pki.model.CertificateEntity;
 import pki_project.pki.model.User;
 import pki_project.pki.services.CertificateDownloadService;
 import pki_project.pki.services.CertificateService;
+import pki_project.pki.services.CsrService;
 
 import java.util.List;
 
@@ -32,6 +37,9 @@ public class CertificateController {
 
     @Autowired
     private CertificateDownloadService downloadService;
+
+    @Autowired
+    private CsrService csrService;
 
     @PostMapping(value = "/create-certificate", consumes = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasRole('ADMIN')")
@@ -104,6 +112,28 @@ public class CertificateController {
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"certificate-" + id + ".cer\"")
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(derBytes);
+    }
+
+    @PostMapping(value = "/csr/upload", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> uploadCsr(@RequestBody CsrRequestDTO dto) {
+        try {
+            Long certId = csrService.issueCertificateFromCsr(dto);
+            return ResponseEntity.ok("certificate issued, id: " + certId);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping(value = "/csr/autogenerate", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> autogenerate(@RequestBody AutogenerateRequestDTO dto) {
+        try {
+            AutogenerateResponseDTO response = csrService.autogenerate(dto);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @PostMapping("/{id}/download/pkcs12")

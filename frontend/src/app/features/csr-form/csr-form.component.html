@@ -1,0 +1,133 @@
+<div class="cert-container">
+  <div class="cert-header">
+    <h2>Request Certificate</h2>
+  </div>
+
+  <div class="tabs">
+    <button [class.active]="activeTab === 'upload'" (click)="setTab('upload')">Upload CSR</button>
+    <button [class.active]="activeTab === 'autogenerate'" (click)="setTab('autogenerate')">Autogenerate</button>
+  </div>
+
+  <!-- UPLOAD CSR TAB -->
+  <div class="cert-body" *ngIf="activeTab === 'upload'">
+    <div class="info-group">
+      <h3>Upload your CSR file</h3>
+      <p class="hint">Generate a CSR using OpenSSL: <code>openssl req -new -key my_key.pem -out my_csr.pem</code></p>
+
+      <div class="form-row">
+        <label>CSR File (.pem)</label>
+        <input type="file" accept=".pem,.csr" (change)="onFileSelected($event)">
+      </div>
+
+      <div class="form-row">
+        <label>CA Issuer</label>
+        <select [(ngModel)]="csrIssuerId">
+          <option [value]="null" disabled>Select CA...</option>
+          <option *ngFor="let ca of availableCAs" [value]="ca.id">
+            {{ extractField(ca.subjectName, 'CN') }} ({{ ca.organizationName }})
+          </option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <label>Start Date</label>
+        <input type="date" [(ngModel)]="csrStartDate" disabled>
+      </div>
+
+      <div class="form-row">
+        <label>End Date</label>
+        <input type="date" [(ngModel)]="csrEndDate">
+      </div>
+
+      <div class="error-msg" *ngIf="csrError">{{ csrError }}</div>
+      <div class="success-msg" *ngIf="csrMessage">{{ csrMessage }}</div>
+
+      <button class="btn-submit" (click)="submitCsr()">Submit CSR</button>
+    </div>
+  </div>
+
+  <!-- AUTOGENERATE TAB -->
+  <div class="cert-body" *ngIf="activeTab === 'autogenerate'">
+    <div class="info-group">
+      <h3>Certificate Details</h3>
+
+      <div class="form-row">
+        <label>Common Name (CN) *</label>
+        <input type="text" [(ngModel)]="ag.commonName" placeholder="e.g. Marko Kostic">
+      </div>
+      <div class="form-row">
+        <label>First Name</label>
+        <input type="text" [(ngModel)]="ag.name">
+      </div>
+      <div class="form-row">
+        <label>Last Name</label>
+        <input type="text" [(ngModel)]="ag.lastName">
+      </div>
+      <div class="form-row">
+        <label>Organization</label>
+        <input type="text" [(ngModel)]="ag.organization">
+      </div>
+      <div class="form-row">
+        <label>Organizational Unit</label>
+        <input type="text" [(ngModel)]="ag.organizationalUnit">
+      </div>
+      <div class="form-row">
+        <label>Country (2-letter code) *</label>
+        <input type="text" [(ngModel)]="ag.country" maxlength="2" placeholder="RS">
+      </div>
+      <div class="form-row">
+        <label>Email</label>
+        <input type="email" [(ngModel)]="ag.email">
+      </div>
+      <div class="form-row">
+        <label>CA Issuer *</label>
+        <select [(ngModel)]="ag.issuerId">
+          <option [value]="null" disabled>Select CA...</option>
+          <option *ngFor="let ca of availableCAs" [value]="ca.id">
+            {{ extractField(ca.subjectName, 'CN') }} ({{ ca.organizationName }})
+          </option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>Start Date *</label>
+        <input type="date" [(ngModel)]="ag.startDate" disabled>
+      </div>
+      <div class="form-row">
+        <label>End Date *</label>
+        <input type="date" [(ngModel)]="ag.endDate">
+      </div>
+
+      <div class="error-msg" *ngIf="agError">{{ agError }}</div>
+      <button class="btn-submit" (click)="submitAutogenerate()">Generate Certificate</button>
+    </div>
+
+    <div class="info-group" *ngIf="agResult">
+      <h3>Certificate Generated</h3>
+      <p class="hint warning">download your private key now - it will not be available again.</p>
+
+      <div class="download-actions" style="margin-top: 1rem;">
+        <button class="btn-download primary" 
+                (click)="downloadPem(agResult!.certificatePem, 'certificate-' + agResult!.certificateId + '.pem')">
+          Download Certificate (.pem)
+        </button>
+        <button class="btn-download" 
+                (click)="downloadPem(agResult!.privateKeyPem, 'private-key-' + agResult!.certificateId + '.pem')">
+          Download Private Key (.pem)
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" *ngIf="showSuccessModal">
+  <div class="modal">
+    <h3>Success</h3>
+
+    <p>{{ modalMessage }}</p>
+
+    <button
+      class="btn-submit"
+      (click)="showSuccessModal = false">
+      OK
+    </button>
+  </div>
+</div>

@@ -11,6 +11,7 @@ import pki_project.pki.dto.TwoFactorVerifyDTO;
 import pki_project.pki.model.User;
 import pki_project.pki.repositories.UserRepository;
 import pki_project.pki.security.JwtUtil;
+import pki_project.pki.services.KeyManagementService;
 import pki_project.pki.services.AuthService;
 import pki_project.pki.services.RefreshTokenService;
 import pki_project.pki.services.TwoFactorService;
@@ -31,6 +32,9 @@ public class TwoFactorController {
 
     @Autowired
     private UserDetailsService userDetailsService;
+
+    @Autowired
+    private KeyManagementService keyManagementService;
 
     @Autowired
     private JwtUtil jwtUtil;
@@ -64,7 +68,8 @@ public class TwoFactorController {
             return ResponseEntity.badRequest().body(errorResponse);
         }
 
-        user.setTwoFactorSecret(secret);
+        String encryptedSecret = keyManagementService.encryptText(secret);
+        user.setTwoFactorSecret(encryptedSecret);
         user.setTwoFactorEnabled(true);
         userRepository.save(user);
 
@@ -85,8 +90,9 @@ public class TwoFactorController {
             errorResponse.put("success", false);
             return ResponseEntity.badRequest().body(errorResponse);
         }
-
-        if (!twoFactorService.verifyCode(user.getTwoFactorSecret(), dto.getCode())) {
+        
+        String decryptedSecret = keyManagementService.decryptText(user.getTwoFactorSecret());
+        if (!twoFactorService.verifyCode(decryptedSecret, dto.getCode())) {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("error", "invalid 2FA code");
             errorResponse.put("success", false);
@@ -117,7 +123,8 @@ public class TwoFactorController {
         }
 
         int code = ((Number) body.get("code")).intValue();
-        if (!twoFactorService.verifyCode(user.getTwoFactorSecret(), code)) {
+        String decryptedSecret = keyManagementService.decryptText(user.getTwoFactorSecret());
+        if (!twoFactorService.verifyCode(decryptedSecret, code)) {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("error", "invalid 2FA code");
             errorResponse.put("success", false);
