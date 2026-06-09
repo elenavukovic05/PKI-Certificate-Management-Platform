@@ -26,6 +26,11 @@
     <a *ngIf="role === 'ADMIN'" routerLink="/all-certificates" routerLinkActive="active">
       All Certificates
     </a>
+    <button *ngIf="role === 'ADMIN'" 
+        class="twofa-btn" 
+        (click)="showRotationModal = true">
+        Rotate Key
+    </button>
         <button class="twofa-btn" (click)="toggle2FA()" [class.active]="twoFactorEnabled">
       {{ twoFactorEnabled ? 'Disable 2FA' : 'Enable 2FA' }}
     </button>
@@ -39,3 +44,8 @@
   (closed)="on2FAModalClose()"
   (success)="on2FASuccess($event)"
 ></app-two-factor-modal>
+
+<app-key-rotation-modal
+  *ngIf="showRotationModal"
+  (closed)="showRotationModal = false">
+</app-key-rotation-modal>

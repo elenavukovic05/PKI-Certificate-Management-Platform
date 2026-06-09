@@ -1,9 +1,14 @@
 package pki_project.pki.services;
 
+import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import pki_project.pki.model.MasterKeyRotation;
 import pki_project.pki.model.Organization;
+import pki_project.pki.repositories.MasterKeyRotationRepository;
+import pki_project.pki.repositories.OrganizationRepository;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
@@ -14,9 +19,15 @@ import java.security.*;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Date;
+import java.util.List;
 
 @Service
 public class KeyManagementService {
+    @Autowired
+    OrganizationRepository organizationRepository;
+    @Autowired
+    MasterKeyRotationRepository rotationRepository;
 
     private static final int AES_KEY_SIZE = 256;
     private static final int GCM_IV_LENGTH = 12;
@@ -159,5 +170,90 @@ public class KeyManagementService {
         } catch (Exception e) {
             throw new RuntimeException("failed to decrypt 2FA secret: " + e.getMessage(), e);
         }
+    }
+
+    public String encryptOrganizationKeyWithKey(SecretKey key, SecretKey orgKey) {
+        try {
+            byte[] iv = new byte[GCM_IV_LENGTH];
+            new SecureRandom().nextBytes(iv);
+
+            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+            cipher.init(Cipher.ENCRYPT_MODE, key, new GCMParameterSpec(GCM_TAG_LENGTH, iv));
+            byte[] encrypted = cipher.doFinal(orgKey.getEncoded());
+
+            byte[] result = new byte[GCM_IV_LENGTH + encrypted.length];
+            System.arraycopy(iv, 0, result, 0, GCM_IV_LENGTH);
+            System.arraycopy(encrypted, 0, result, GCM_IV_LENGTH, encrypted.length);
+
+            return Base64.getEncoder().encodeToString(result);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to encrypt organization key", e);
+        }
+    }
+
+    public SecretKey decryptOrganizationKeyWithKey(SecretKey key, String encryptedOrgKeyBase64) {
+        try {
+            byte[] all = Base64.getDecoder().decode(encryptedOrgKeyBase64);
+            byte[] iv = Arrays.copyOfRange(all, 0, GCM_IV_LENGTH);
+            byte[] encrypted = Arrays.copyOfRange(all, GCM_IV_LENGTH, all.length);
+
+            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+            cipher.init(Cipher.DECRYPT_MODE, key, new GCMParameterSpec(GCM_TAG_LENGTH, iv));
+            byte[] keyBytes = cipher.doFinal(encrypted);
+
+            return new SecretKeySpec(keyBytes, "AES");
+        } catch (Exception e) {
+            throw new RuntimeException("failed to decrypt organization key" + e.getMessage(), e);
+        }
+    }
+
+    public boolean canRotate() {
+        MasterKeyRotation rotation = rotationRepository.findById(1L).orElse(null);
+        if (rotation == null) return true; // nikad nije rotiran
+
+        long daysSinceLastRotation = (new Date().getTime() - rotation.getLastRotatedAt().getTime())
+                / (1000 * 60 * 60 * 24);
+        return daysSinceLastRotation >= rotation.getRotationIntervalDays();
+    }
+
+    public int getDaysUntilNextRotation() {
+        MasterKeyRotation rotation = rotationRepository.findById(1L).orElse(null);
+        if (rotation == null) return 0;
+
+        long daysSinceLastRotation = (new Date().getTime() - rotation.getLastRotatedAt().getTime())
+                / (1000 * 60 * 60 * 24);
+        return (int) Math.max(0, rotation.getRotationIntervalDays() - daysSinceLastRotation);
+    }
+
+    @Transactional
+    public String rotateMasterKey(){
+        if (!canRotate()) {
+            throw new RuntimeException("Rotation not allowed yet. Days until next rotation: "
+                    + getDaysUntilNextRotation());
+        }
+
+        try{
+            KeyGenerator keyGen = KeyGenerator.getInstance("AES");
+            keyGen.init(AES_KEY_SIZE, new SecureRandom());
+            SecretKey newMasterKey = keyGen.generateKey();
+
+            List<Organization> organizations = organizationRepository.findAll();
+            for(Organization organization : organizations){
+                SecretKey orgKey = decryptOrganizationKeyWithKey(masterKey, organization.getEncryptedOrgKey());
+                String newEncryptedOrgKey = encryptOrganizationKeyWithKey(newMasterKey, orgKey);
+                organization.setEncryptedOrgKey(newEncryptedOrgKey);
+            }
+            organizationRepository.saveAll(organizations);
+
+            MasterKeyRotation rotation = rotationRepository.findById(1L)
+                    .orElse(new MasterKeyRotation(new Date(), 180));
+            rotation.setLastRotatedAt(new Date());
+            rotationRepository.save(rotation);
+
+            return Base64.getEncoder().encodeToString(newMasterKey.getEncoded());
+        } catch (NoSuchAlgorithmException e){
+            throw new RuntimeException("Failed to rotate master key", e);
+        }
+
     }
 }
