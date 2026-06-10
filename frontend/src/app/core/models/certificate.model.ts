@@ -13,6 +13,7 @@ export interface CertificatePreviewDTO {
   crlSign: boolean;
   certificatePem: string;
   organizationName: string;
+  canDownloadPkcs12: boolean
 }
 export interface CACertificatePreviewDTO{
     id : number;
@@ -69,10 +70,11 @@ export interface AutogenerateRequest {
   issuerId: number;
   startDate: string;
   endDate: string;
+  password?: string;
 }
 
 export interface AutogenerateResponse {
   certificateId: number;
   certificatePem: string;
-  privateKeyPem: string;
+  pkcs12Base64: string;
 }

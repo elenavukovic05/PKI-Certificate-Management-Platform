@@ -17,7 +17,7 @@
     <div class="download-actions">
       <button class="btn-download" (click)="downloadCertificate('pem')"> Download PEM </button>
       <button class="btn-download primary" (click)="downloadCertificate('cer')"> Download CER </button>
-      <button class="btn-download" (click)="openPkcs12Modal()"> Download PKCS12 </button>
+      <button *ngIf="selectedCert.canDownloadPkcs12" class="btn-download" (click)="openPkcs12Modal()"> Download PKCS12 </button>
     </div>
   </div>
 

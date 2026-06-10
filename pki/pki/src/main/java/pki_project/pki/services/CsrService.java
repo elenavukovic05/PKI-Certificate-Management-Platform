@@ -99,7 +99,29 @@ public class CsrService {
                 false, true, false, false
         );
         String pem = certificateService.certificateToPem(x509);
-        String privateKeyPem = privateKeyToPem(keyPair.getPrivate());
+        if (requestDTO.getPassword() == null || requestDTO.getPassword().isBlank()) {
+            throw new RuntimeException("Password is required for PKCS12 generation");
+        }
+
+        String pkcs12Base64;
+        try {
+            java.security.KeyStore keyStore = java.security.KeyStore.getInstance("PKCS12");
+            keyStore.load(null, null);
+
+            keyStore.setKeyEntry(
+                    "certificate",
+                    keyPair.getPrivate(),
+                    requestDTO.getPassword().toCharArray(),
+                    new java.security.cert.Certificate[]{x509}
+            );
+
+            java.io.ByteArrayOutputStream outputStream = new java.io.ByteArrayOutputStream();
+            keyStore.store(outputStream, requestDTO.getPassword().toCharArray());
+            byte[] pkcs12Bytes = outputStream.toByteArray();
+            pkcs12Base64 = Base64.getEncoder().encodeToString(pkcs12Bytes);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to generate PKCS12 store: " + e.getMessage(), e);
+        }
         CertificateEntity entity = buildEntity(
                 serialNumber, subjectName.toString(), issuerEntity,
                 keyPair.getPublic(), organization, pem, null,
@@ -108,8 +130,7 @@ public class CsrService {
 
         setOwner(entity);
         certificateRepository.save(entity);
-
-        return new AutogenerateResponseDTO(entity.getId(), pem, privateKeyPem);
+        return new AutogenerateResponseDTO(entity.getId(), pem, pkcs12Base64);
     }
 
     private PKCS10CertificationRequest parseCsr(String csrPem) {
@@ -180,10 +201,5 @@ public class CsrService {
             entity.setOwner(user);
             entity.setCreatedBy(user);
         }
-    }
-
-    private String privateKeyToPem(PrivateKey key) {
-        String base64 = Base64.getMimeEncoder(64, "\n".getBytes()).encodeToString(key.getEncoded());
-        return "-----BEGIN PRIVATE KEY-----\n" + base64 + "\n-----END PRIVATE KEY-----";
     }
 }

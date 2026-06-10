@@ -118,6 +118,7 @@ public class CertificateService {
             );
         }
         certificateEntity.setOrganization(organization);
+        certificateEntity.setCanDownloadPkcs12(encryptedPrivateKey != null && certificateEntity.getType() == CertificateType.END_ENTITY);
         // ##############################
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -279,7 +280,7 @@ public class CertificateService {
             dto.add(new CertificatePreviewDTO(certificate.getId(), certificate.getSubjectName(),certificate.getIssuerName(),
                     certificate.getType(), certificate.getStatus(), certificate.getStartDate(), certificate.getEndDate(),
                     certificate.isCA(), certificate.isDigitalSignature(), certificate.isKeyEncipherment(),
-                    certificate.isKeyCertSign(), certificate.isCrlSign(), certificate.getCertificatePem(), certificate.getOrganization().getName()));
+                    certificate.isKeyCertSign(), certificate.isCrlSign(), certificate.getCertificatePem(), certificate.getOrganization().getName(), certificate.isCanDownloadPkcs12()));
         }
         return dto;
     }
@@ -328,7 +329,8 @@ public class CertificateService {
                     cert.isKeyCertSign(),
                     cert.isCrlSign(),
                     cert.getCertificatePem(),
-                    cert.getOrganization() != null ? cert.getOrganization().getName() : null
+                    cert.getOrganization() != null ? cert.getOrganization().getName() : null,
+                    cert.isCanDownloadPkcs12()
             ));
         }
         return dtoList;
@@ -368,7 +370,8 @@ public class CertificateService {
                     cert.isKeyCertSign(),
                     cert.isCrlSign(),
                     cert.getCertificatePem(),
-                    cert.getOrganization() != null ? cert.getOrganization().getName() : null
+                    cert.getOrganization() != null ? cert.getOrganization().getName() : null,
+                    cert.isCanDownloadPkcs12()
             ));
         }
         return dtoList;
