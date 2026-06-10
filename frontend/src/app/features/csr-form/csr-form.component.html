@@ -42,7 +42,7 @@
       <div class="error-msg" *ngIf="csrError">{{ csrError }}</div>
       <div class="success-msg" *ngIf="csrMessage">{{ csrMessage }}</div>
 
-      <button class="btn-submit" (click)="submitCsr()">Submit CSR</button>
+      <button class="btn-submit" (click)="submitCsr()" [disabled]="isSubmittingCsr"> {{ isSubmittingCsr ? 'Submitting...' : 'Submit CSR' }} </button>
     </div>
   </div>
 
@@ -102,17 +102,17 @@
     </div>
 
     <div class="info-group" *ngIf="agResult">
-      <h3>Certificate Generated</h3>
-      <p class="hint warning">download your private key now - it will not be available again.</p>
+      <h3>Certificate Generated Successfully</h3>
+      <p class="hint warning">make sure to save your downloaded PKCS12 (.p12) file. it contains your private key and this is your only chance to collect it.</p>
 
-      <div class="download-actions" style="margin-top: 1rem;">
+      <div class="download-actions" style="margin-top: 1rem; display: flex; gap: 10px;">
         <button class="btn-download primary" 
-                (click)="downloadPem(agResult!.certificatePem, 'certificate-' + agResult!.certificateId + '.pem')">
-          Download Certificate (.pem)
+                (click)="downloadPkcs12FromBase64(agResult.pkcs12Base64, 'certificate-' + agResult.certificateId + '.p12')">
+          Download PKCS12 (.p12) again
         </button>
         <button class="btn-download" 
-                (click)="downloadPem(agResult!.privateKeyPem, 'private-key-' + agResult!.certificateId + '.pem')">
-          Download Private Key (.pem)
+                (click)="downloadPem(agResult.certificatePem, 'certificate-' + agResult.certificateId + '.pem')">
+          Download Certificate (.pem)
         </button>
       </div>
     </div>

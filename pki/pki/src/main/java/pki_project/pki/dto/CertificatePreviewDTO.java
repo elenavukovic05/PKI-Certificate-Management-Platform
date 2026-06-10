@@ -21,8 +21,9 @@ public class CertificatePreviewDTO {
     boolean crlSign;
     private String certificatePem;
     private String organizationName;
+    private boolean canDownloadPkcs12;
 
-    public CertificatePreviewDTO(Long id,String subjectName, String issuerName, CertificateType type, CertificateStatus status, Date startDate, Date endDate, boolean isCA, boolean digitalSignature, boolean keyEncipherment, boolean keyCertSign, boolean crlSign, String certificatePem,  String organizationName) {
+    public CertificatePreviewDTO(Long id,String subjectName, String issuerName, CertificateType type, CertificateStatus status, Date startDate, Date endDate, boolean isCA, boolean digitalSignature, boolean keyEncipherment, boolean keyCertSign, boolean crlSign, String certificatePem,  String organizationName, boolean canDownloadPkcs12) {
         this.id = id;
         this.subjectName = subjectName;
         this.issuerName = issuerName;
@@ -37,6 +38,7 @@ public class CertificatePreviewDTO {
         this.crlSign = crlSign;
         this.certificatePem = certificatePem;
         this.organizationName = organizationName;
+        this.canDownloadPkcs12 = canDownloadPkcs12;
     }
 
     public Long getId() {
@@ -149,6 +151,14 @@ public class CertificatePreviewDTO {
 
     public void setCertificatePem(String certificatePem) {
         this.certificatePem = certificatePem;
+    }
+
+    public boolean isCanDownloadPkcs12() {
+        return canDownloadPkcs12;
+    }
+
+    public void setCanDownloadPkcs12(boolean canDownloadPkcs12) {
+        this.canDownloadPkcs12 = canDownloadPkcs12;
     }
 
 }
