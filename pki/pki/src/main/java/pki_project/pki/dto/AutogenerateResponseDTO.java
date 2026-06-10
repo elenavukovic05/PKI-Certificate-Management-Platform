@@ -3,12 +3,12 @@ package pki_project.pki.dto;
 public class AutogenerateResponseDTO {
     private Long certificateId;
     private String certificatePem;
-    private String privateKeyPem;
+    private String pkcs12Base64;
 
-    public AutogenerateResponseDTO(Long certificateId, String certificatePem, String privateKeyPem) {
+    public AutogenerateResponseDTO(Long certificateId, String certificatePem, String pkcs12Base64) {
         this.certificateId = certificateId;
         this.certificatePem = certificatePem;
-        this.privateKeyPem = privateKeyPem;
+        this.pkcs12Base64 = pkcs12Base64;
     }
 
     public Long getCertificateId() {
@@ -27,12 +27,12 @@ public class AutogenerateResponseDTO {
         this.certificatePem = certificatePem;
     }
 
-    public String getPrivateKeyPem() {
-        return privateKeyPem;
+    public String getPkcs12Base64() {
+        return pkcs12Base64;
     }
 
-    public void setPrivateKeyPem(String privateKeyPem) {
-        this.privateKeyPem = privateKeyPem;
+    public void setPkcs12Base64(String pkcs12Base64) {
+        this.pkcs12Base64 = pkcs12Base64;
     }
     
 }

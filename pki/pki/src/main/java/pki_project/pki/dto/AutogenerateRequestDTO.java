@@ -13,6 +13,7 @@ public class AutogenerateRequestDTO {
     private Long issuerId;
     private Date startDate;
     private Date endDate;
+    private String password;
 
     public String getCommonName() {
         return commonName;
@@ -73,6 +74,12 @@ public class AutogenerateRequestDTO {
     }
     public void setEndDate(Date endDate) {
         this.endDate = endDate;
+    }
+    public String getPassword() {
+        return password;
+    }
+    public void setPassword(String password) {
+        this.password = password;
     }
 
 }

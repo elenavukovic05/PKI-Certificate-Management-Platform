@@ -72,6 +72,9 @@ public class CertificateEntity {
     private User createdBy;
 
     private String revocationReason;
+    
+    @Column(name = "can_download_pkcs12", nullable = false)
+    private boolean canDownloadPkcs12;
 
     public CertificateEntity() {
     }
@@ -272,4 +275,13 @@ public class CertificateEntity {
     public void setRevocationReason(String revocationReason) {
         this.revocationReason = revocationReason;
     }
+
+    public boolean isCanDownloadPkcs12() {
+        return canDownloadPkcs12;
+    }
+
+    public void setCanDownloadPkcs12(boolean canDownloadPkcs12) {
+        this.canDownloadPkcs12 = canDownloadPkcs12;
+    }
+
 }
