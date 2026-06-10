@@ -13,6 +13,9 @@ public class MasterKeyRotation {
     @Id
     private Long id = 1L; //uvijek samo jedan red u tabeli
 
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String encryptedKey;
+
     @Column
     private Date lastRotatedAt;
 
@@ -49,5 +52,13 @@ public class MasterKeyRotation {
 
     public void setRotationIntervalDays(int rotationIntervalDays) {
         this.rotationIntervalDays = rotationIntervalDays;
+    }
+
+    public String getEncryptedKey() {
+        return encryptedKey;
+    }
+
+    public void setEncryptedKey(String encryptedKey) {
+        this.encryptedKey = encryptedKey;
     }
 }

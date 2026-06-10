@@ -1,70 +1,42 @@
 <div class="modal-overlay">
   <div class="modal">
+    <h3>Master Key Rotation</h3>
 
     <div *ngIf="loading">
       <p>Loading...</p>
     </div>
 
-    <div *ngIf="!loading && !canRotate && !newKey">
-      <h3>Master Key Rotation</h3>
-      <div class="alert alert-error">
-        Rotation is not available yet.
-        Next rotation available in <strong>{{ daysUntilRotation }}</strong> day(s).
+    <div *ngIf="!loading && !successMessage">
+      <div *ngIf="canRotate" class="alert alert-info">
+        Rotation is available. Click below to rotate the master key.
       </div>
+      <div *ngIf="!canRotate" class="alert alert-warning">
+        Next rotation available in <strong>{{ daysUntilNext }}</strong> days.
+      </div>
+
+      <div *ngIf="errorMessage" class="alert alert-danger">
+        {{ errorMessage }}
+      </div>
+
+      <div class="modal-actions">
+        <button (click)="rotate()" [disabled]="rotating || !canRotate">
+          {{ rotating ? 'Rotating...' : 'Rotate Key' }}
+        </button>
+        
+        <button (click)="rotate(true)" [disabled]="rotating" class="btn-force">
+          Force Rotate (Test)
+        </button>
+        <button (click)="close()">Cancel</button>
+      </div>
+    </div>
+
+    <div *ngIf="successMessage">
+      <div class="alert alert-success">
+        {{ successMessage }}
+      </div>
+      <p>All organization keys have been re-encrypted with the new rotating key.</p>
       <div class="modal-actions">
         <button (click)="close()">Close</button>
-      </div>
-    </div>
-
-    <div *ngIf="!loading && canRotate && !newKey">
-      <h3>Master Key Rotation</h3>
-      <p class="info-text">
-        This will re-encrypt all organization keys with a new master key.
-      </p>
-      <div class="alert alert-warning">
-        After rotation you must update your <strong>environment variables</strong>
-        and restart the server. Until you do, certificate operations 
-        will not work correctly.
-      </div>
-      <div *ngIf="errorMessage" class="alert alert-error">{{ errorMessage }}</div>
-      <div class="modal-actions">
-        <button class="btn-cancel" (click)="close()">Cancel</button>
-        <button class="btn-danger" (click)="rotate()" [disabled]="rotating">
-          {{ rotating ? 'Rotating...' : 'Rotate Master Key' }}
-        </button>
-      </div>
-    </div>
-
-    <div *ngIf="newKey">
-      <h3>New Master Key Generated</h3>
-      <div class="alert alert-warning">
-        <strong>Save this key immediately!</strong> Update your <code>environment variables</code> 
-        and restart the server. Until restarted, certificate operations will not work.
-      </div>
-
-      <p class="label-text">New Master Key:</p>
-      <div class="key-display">
-        <code class="key-text">{{ newKey }}</code>
-        <button class="btn-copy" (click)="copyKey()">
-          {{ copied ? 'Copied!' : 'Copy' }}
-        </button>
-      </div>
-
-      <label class="confirm-label">
-        <input type="checkbox" [(ngModel)]="confirmed" />
-        I have saved the new master key and understand I must restart 
-        the server for changes to take effect
-      </label>
-
-      <div *ngIf="errorMessage" class="alert alert-error">{{ errorMessage }}</div>
-
-      <div class="modal-actions">
-        <button
-          (click)="close()"
-          [disabled]="!confirmed"
-          [class.btn-disabled]="!confirmed">
-          Close
-        </button>
       </div>
     </div>
 

@@ -44,10 +44,10 @@ public class AdminController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(value = "/rotate-master-key")
-    public ResponseEntity<String> rotateMasterKey(){
+    public ResponseEntity<String> rotateMasterKey(@RequestParam(defaultValue = "false") boolean force){
         try {
-            String newMasterKey = keyManagementService.rotateMasterKey();
-            return ResponseEntity.ok(newMasterKey);
+            String result = keyManagementService.rotateMasterKey(force);
+            return ResponseEntity.ok(result);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

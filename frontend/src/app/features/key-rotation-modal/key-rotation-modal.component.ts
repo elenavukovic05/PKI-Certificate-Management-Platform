@@ -14,22 +14,25 @@ import { environment } from '../../../env/environment';
 export class KeyRotationModalComponent implements OnInit{
   @Output() closed = new EventEmitter<void>();
 
-  canRotate = false;
-  daysUntilRotation = 0;
-  newKey: string | null = null;
-  confirmed = false;
-  copied = false;
-  rotating = false;
+  successMessage = '';
   errorMessage = '';
   loading = true;
+  rotating = false;
+  canRotate = false;
+  daysUntilNext = 0;
 
   constructor(private http: HttpClient, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
+    this.loadStatus();
+  }
+
+  loadStatus(): void {
+    this.loading = true;
     this.http.get<any>(`${environment.apiHost}/admin/rotation-status`).subscribe({
       next: (data) => {
         this.canRotate = data.canRotate;
-        this.daysUntilRotation = data.daysUntilNextRotation;
+        this.daysUntilNext = data.daysUntilNextRotation;
         this.loading = false;
         this.cdr.detectChanges();
       },
@@ -41,36 +44,23 @@ export class KeyRotationModalComponent implements OnInit{
     });
   }
 
-  rotate(): void {
-    console.log('rotate() called');
+  rotate(force: boolean = false): void {
     this.rotating = true;
     this.errorMessage = '';
-    console.log('sending request to:', `${environment.apiHost}/admin/rotate-master-key`);
-    this.http.post(
-      `${environment.apiHost}/admin/rotate-master-key`,
-      {},
-      { responseType: 'text' }
-    ).subscribe({
-      next: (key: string) => {
-        console.log('success:', key);
-        this.newKey = key;
+    this.successMessage = '';
+    this.http.post(`${environment.apiHost}/admin/rotate-master-key${force ? '?force=true' : ''}`, {}, {
+      responseType: 'text'}).subscribe({
+      next: (data: string) => {
         this.rotating = false;
+        this.successMessage = data;
+        this.canRotate = false;
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.log('error:', err);
-        this.errorMessage = err.error || 'Rotation failed.';
         this.rotating = false;
+        this.errorMessage = err.error || 'Rotation failed.';
         this.cdr.detectChanges();
       }
-    });
-  }
-
-  copyKey(): void {
-    if (!this.newKey) return;
-    navigator.clipboard.writeText(this.newKey).then(() => {
-      this.copied = true;
-      setTimeout(() => this.copied = false, 3000);
     });
   }
 

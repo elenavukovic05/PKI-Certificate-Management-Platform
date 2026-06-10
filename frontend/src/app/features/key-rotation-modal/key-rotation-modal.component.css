@@ -162,3 +162,9 @@ h3 {
   color: #6c6861 !important;
   cursor: not-allowed !important;
 }
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
