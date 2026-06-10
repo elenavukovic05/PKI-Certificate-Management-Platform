@@ -3,14 +3,16 @@ package pki_project.pki.controllers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 import pki_project.pki.dto.ActivateCAUserDTO;
 import pki_project.pki.dto.CAUserDTO;
+import pki_project.pki.services.KeyManagementService;
 import pki_project.pki.services.OrganizationService;
 import pki_project.pki.services.UserService;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping(value = "api/v1/admin")
@@ -20,6 +22,8 @@ public class AdminController {
     OrganizationService organizationService;
     @Autowired
     UserService userService;
+    @Autowired
+    KeyManagementService keyManagementService;
 
 
     @PostMapping(value = "/add-organization", consumes = MediaType.TEXT_PLAIN_VALUE)
@@ -36,6 +40,26 @@ public class AdminController {
     public ResponseEntity<String> activateCAUser(@RequestBody ActivateCAUserDTO dto) {
         userService.activateCAUser(dto);
         return ResponseEntity.ok("CA user activated successfully");
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping(value = "/rotate-master-key")
+    public ResponseEntity<String> rotateMasterKey(@RequestParam(defaultValue = "false") boolean force){
+        try {
+            String result = keyManagementService.rotateMasterKey(force);
+            return ResponseEntity.ok(result);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/rotation-status")
+    public ResponseEntity<?> getRotationStatus() {
+        Map<String, Object> status = new HashMap<>();
+        status.put("canRotate", keyManagementService.canRotate());
+        status.put("daysUntilNextRotation", keyManagementService.getDaysUntilNextRotation());
+        return ResponseEntity.ok(status);
     }
 
 }

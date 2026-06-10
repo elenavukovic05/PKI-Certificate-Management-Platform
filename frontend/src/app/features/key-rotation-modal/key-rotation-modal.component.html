@@ -1,0 +1,44 @@
+<div class="modal-overlay">
+  <div class="modal">
+    <h3>Master Key Rotation</h3>
+
+    <div *ngIf="loading">
+      <p>Loading...</p>
+    </div>
+
+    <div *ngIf="!loading && !successMessage">
+      <div *ngIf="canRotate" class="alert alert-info">
+        Rotation is available. Click below to rotate the master key.
+      </div>
+      <div *ngIf="!canRotate" class="alert alert-warning">
+        Next rotation available in <strong>{{ daysUntilNext }}</strong> days.
+      </div>
+
+      <div *ngIf="errorMessage" class="alert alert-danger">
+        {{ errorMessage }}
+      </div>
+
+      <div class="modal-actions">
+        <button (click)="rotate()" [disabled]="rotating || !canRotate">
+          {{ rotating ? 'Rotating...' : 'Rotate Key' }}
+        </button>
+        
+        <button (click)="rotate(true)" [disabled]="rotating" class="btn-force">
+          Force Rotate (Test)
+        </button>
+        <button (click)="close()">Cancel</button>
+      </div>
+    </div>
+
+    <div *ngIf="successMessage">
+      <div class="alert alert-success">
+        {{ successMessage }}
+      </div>
+      <p>All organization keys have been re-encrypted with the new rotating key.</p>
+      <div class="modal-actions">
+        <button (click)="close()">Close</button>
+      </div>
+    </div>
+
+  </div>
+</div>

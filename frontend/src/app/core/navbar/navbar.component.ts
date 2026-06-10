@@ -5,11 +5,12 @@ import { AuthService } from '../services/auth.service';
 import { TwoFactorAuthService } from '../services/two-factor.service';
 import { TwoFactorModalComponent } from '../../features/two-factor/two-factor.component';
 import { Subscription, filter } from 'rxjs';
+import { KeyRotationModalComponent } from '../../features/key-rotation-modal/key-rotation-modal.component';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, RouterModule, TwoFactorModalComponent],
+  imports: [CommonModule, RouterModule, TwoFactorModalComponent, KeyRotationModalComponent],
   templateUrl: './navbar.component.html',
   styleUrls: ['./navbar.component.css']
 })
@@ -17,6 +18,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   role: string | null = null;
   twoFactorEnabled = false;
   show2FAModal = false;
+  showRotationModal = false;
   modalMode: 'enable' | 'disable' = 'enable';
   private authStateSub?: Subscription;
   private routerSub?: Subscription;
