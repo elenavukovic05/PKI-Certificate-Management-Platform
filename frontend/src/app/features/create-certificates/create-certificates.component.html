@@ -62,10 +62,7 @@
 
   <label>
     Start date
-    <input type="datetime-local" formControlName="startDate" />
-    <div *ngIf="startDate.touched && startDate.invalid" class="error">
-    Required
-  </div>
+    <input type="datetime-local" formControlName="startDate" readonly />
   </label>
 
   <label>
@@ -89,7 +86,7 @@
     Issuer
     <select formControlName="issuerId">
       <option *ngFor="let i of issuers" [ngValue]="i.id">
-        {{ i.subjectName }} | {{ i.type }} | {{ i.organizationName }}
+        {{ i.subjectName }} | {{ i.type }} | {{ i.organizationName }} {{i.pathLength}}
       </option>
     </select>
   </label>
@@ -130,6 +127,36 @@
   <label>
     <input type="checkbox" formControlName="crlSign" /> CRL Sign
   </label>
+  
+  <label *ngIf="type.value === 'INTERMEDIATE'">
+    Path length
+    <input type = "number" formControlName="pathLength" min="0" step="1" /> 
+    <div *ngIf="pathLength.touched && pathLength.invalid" class="error">
+      Path length must be a whole number greater than or equal to 0
+    </div>
+  </label>
+  <div *ngIf="type.value === 'END_ENTITY'" class="san-section">
+    <h3>Subject Alternative Names (SAN)</h3>
+
+    <div
+      *ngFor="let san of subjectAlternativeNames.controls; let i = index"
+      class="san-row"
+    >
+      <input
+        type="text"
+        [formControl]="san"
+        placeholder="e.g. user@gmail.com or device01.local"
+      />
+
+      <button type="button" (click)="removeSan(i)">
+        Remove
+      </button>
+    </div>
+
+    <button type="button" (click)="addSan()">
+      + Add SAN
+    </button>
+  </div>
 
   <button type="submit">Create</button>
 

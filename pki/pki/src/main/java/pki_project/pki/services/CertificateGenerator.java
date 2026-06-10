@@ -47,10 +47,21 @@ public class CertificateGenerator {
                     subject.getPublicKey());
 
 
+            BasicConstraints basicConstraints;
+            if (certificateRequest.isCA()) {
+                if (certificateRequest.getPathLength() != null) {
+                    basicConstraints = new BasicConstraints(certificateRequest.getPathLength());
+                } else {
+                    basicConstraints = new BasicConstraints(true);
+                }
+            } else {
+                basicConstraints = new BasicConstraints(false);
+            }
+
             certGen.addExtension(
                     Extension.basicConstraints,
                     true,
-                    new BasicConstraints(certificateRequest.isCA())
+                    basicConstraints
             );
 
             int keyUsage = 0;

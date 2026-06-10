@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormControl, FormArray, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CACertificatePreviewDTO, CertificatePreviewDTO, CertificateRequestDTO } from '../../core/models/certificate.model';
 import { OrganizationDTO } from '../../core/models/organization.model';
 import { CertificateService } from '../../core/services/certificate.service';
@@ -37,11 +37,16 @@ export class CreateCertificatesComponent {
     endDate : new FormControl('', [Validators.required]),
     issuerId: new FormControl<number | null>(null),
     organizationId: new FormControl<number | null>(null),
-    isCA: new FormControl(false),
-    digitalSignature: new FormControl(false),
+    isCA: new FormControl(true),
+    digitalSignature: new FormControl(true),
     keyEncipherment: new FormControl(false),
-    keyCertSign: new FormControl(false),
-    crlSign: new FormControl(false),
+    keyCertSign: new FormControl(true),
+    crlSign: new FormControl(true),
+    pathLength: new FormControl<number | null>(null, [
+      Validators.min(0),
+      Validators.pattern('^[0-9]+$')
+    ]),
+    subjectAlternativeNames: new FormArray<FormControl<string | null>>([]),
     ownerId: new FormControl<number | null>(null),
   }); 
   
@@ -87,32 +92,62 @@ export class CreateCertificatesComponent {
   get type(){
     return this.certificateForm.controls.type;
   }
+  get pathLength(){
+    return this.certificateForm.controls.pathLength;
+  }
+  get subjectAlternativeNames() {
+    return this.certificateForm.controls.subjectAlternativeNames;
+  }
   ngOnInit() {
+    const now = new Date();
+
+    const localDateTime =
+      new Date(now.getTime() - now.getTimezoneOffset() * 60000)
+        .toISOString()
+        .slice(0, 16);
+
+    this.certificateForm.patchValue({
+        startDate: localDateTime
+    });
     this.loadIssuers();
     this.loadOrganizations();
     this.loadUsers();
 
     this.certificateForm.controls.type.valueChanges.subscribe(type => {
-    if (type === 'ROOT' || type === 'INTERMEDIATE') {
-      this.certificateForm.patchValue({
-        isCA: true,
-        digitalSignature: true,
-        keyEncipherment: false,
-        keyCertSign: true,
-        crlSign: true
-      });
-    }
+      if (type === 'ROOT') {
+        this.certificateForm.patchValue({
+          isCA: true,
+          digitalSignature: true,
+          keyEncipherment: false,
+          keyCertSign: true,
+          crlSign: true,
+          pathLength: null,
+        });
+        this.subjectAlternativeNames.clear();
+      }
 
-    if (type === 'END_ENTITY') {
-      this.certificateForm.patchValue({
-        isCA: false,
-        digitalSignature: true,
-        keyEncipherment: true,
-        keyCertSign: false,
-        crlSign: false
-      });
-    }
-  });
+      if (type === 'INTERMEDIATE') {
+        this.certificateForm.patchValue({
+          isCA: true,
+          digitalSignature: true,
+          keyEncipherment: false,
+          keyCertSign: true,
+          crlSign: true
+        });
+        this.subjectAlternativeNames.clear();
+      }
+
+      if (type === 'END_ENTITY') {
+        this.certificateForm.patchValue({
+          isCA: false,
+          digitalSignature: true,
+          keyEncipherment: true,
+          keyCertSign: false,
+          crlSign: false,
+          pathLength: null
+        });
+      }
+    });
   }
   loadUsers(){
     this.certificateService.getUsers().subscribe({
@@ -149,6 +184,9 @@ export class CreateCertificatesComponent {
     });
   }
   onSubmit(){
+    // console.log('SUBMIT CLICKED');
+    // console.log('FORM VALID:', this.certificateForm.valid);
+    // console.log('FORM VALUE:', this.certificateForm.getRawValue());
     if (this.certificateForm.invalid) {
       this.errorMessage = 'Please fill all required fields correctly';
       this.certificateForm.markAllAsTouched();
@@ -162,6 +200,17 @@ export class CreateCertificatesComponent {
 
     if (formValue.type !== 'ROOT' && !formValue.issuerId) {
       this.errorMessage = 'Please choose issuer';
+      return;
+    }
+    const endDate = new Date(formValue.endDate!);
+    const now = new Date();
+
+    if (endDate <= now) {
+      this.errorMessage = 'End date must be in the future';
+      return;
+    }
+    if(formValue.type == 'INTERMEDIATE' && !Number.isInteger(formValue.pathLength)){
+      this.errorMessage = 'Path length must be a whole number.';
       return;
     }
     this.successMessage = '';
@@ -185,6 +234,13 @@ export class CreateCertificatesComponent {
       keyEncipherment: formValue.keyEncipherment ?? false,
       keyCertSign: formValue.keyCertSign ?? false,
       crlSign: formValue.crlSign ?? false,
+      pathLength: formValue.type === 'INTERMEDIATE'
+        ? formValue.pathLength
+        : null,
+      subjectAlternativeNames: formValue.type === 'END_ENTITY'
+        ? (formValue.subjectAlternativeNames ?? [])
+            .filter((san): san is string => san !== null && san.trim() !== '')
+        : [],
       type: formValue.type as 'ROOT' | 'INTERMEDIATE' | 'END_ENTITY',
       ownerId : formValue.type === 'END_ENTITY' ? formValue.ownerId : null,
   };
@@ -195,11 +251,25 @@ export class CreateCertificatesComponent {
         this.certificateForm.reset();
       },
       error: (err) => {
-        this.errorMessage = err.error || 'Something went wrong';
-        this.successMessage = '';
+        console.log('SERVER ERROR:', err);
+        console.log('SERVER ERROR BODY:', err.error);
+
+        this.errorMessage =
+          typeof err.error === 'string'
+            ? err.error
+            : err.error?.message || err.message || 'Something went wrong';
+
+          this.successMessage = '';
+          this.cdr.detectChanges();
       }
     });
   }
 
+  addSan() {
+  this.subjectAlternativeNames.push(new FormControl(''));
+  }
 
+  removeSan(index: number) {
+    this.subjectAlternativeNames.removeAt(index);
+  }
 }

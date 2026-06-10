@@ -4,7 +4,9 @@ import jakarta.persistence.*;
 import pki_project.pki.model.enums.CertificateStatus;
 import pki_project.pki.model.enums.CertificateType;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "certificates")
@@ -52,12 +54,21 @@ public class CertificateEntity {
     boolean keyEncipherment;
     boolean keyCertSign;
     boolean crlSign;
+    Integer pathLength;
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String certificatePem;
 
     @Column(columnDefinition = "TEXT")
     private String encryptedPrivateKey;
+
+    @ElementCollection
+    @CollectionTable(
+            name = "certificate_sans",
+            joinColumns = @JoinColumn(name = "certificate_id")
+    )
+    @Column(name = "san")
+    private List<String> subjectAlternativeNames = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id")
@@ -83,7 +94,28 @@ public class CertificateEntity {
                              CertificateEntity issuerCertificate, CertificateType type, Date startDate,
                              Date endDate, boolean isCA, boolean digitalSignature,
                              boolean keyEncipherment, boolean keyCertSign, boolean crlSign,
-                             String certificatePem, String encryptedPrivateKey) {
+                             Integer pathLength, String certificatePem, String encryptedPrivateKey) {
+        this.serialNumber = serialNumber;
+        this.subjectName = subjectName;
+        this.issuerCertificate = issuerCertificate;
+        this.type = type;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.isCA = isCA;
+        this.digitalSignature = digitalSignature;
+        this.keyEncipherment = keyEncipherment;
+        this.keyCertSign = keyCertSign;
+        this.crlSign = crlSign;
+        this.pathLength = pathLength;
+        this.certificatePem = certificatePem;
+        this.encryptedPrivateKey = encryptedPrivateKey;
+        this.status = CertificateStatus.VALID;
+    }
+    public CertificateEntity(String serialNumber, String subjectName,
+                             CertificateEntity issuerCertificate, CertificateType type, Date startDate,
+                             Date endDate, boolean isCA, boolean digitalSignature,
+                             boolean keyEncipherment, boolean keyCertSign, boolean crlSign,
+                            String certificatePem, String encryptedPrivateKey) {
         this.serialNumber = serialNumber;
         this.subjectName = subjectName;
         this.issuerCertificate = issuerCertificate;
@@ -99,6 +131,7 @@ public class CertificateEntity {
         this.encryptedPrivateKey = encryptedPrivateKey;
         this.status = CertificateStatus.VALID;
     }
+
 
     public Long getId() {
         return id;
@@ -118,6 +151,14 @@ public class CertificateEntity {
 
     public String getSubjectName() {
         return subjectName;
+    }
+
+    public List<String> getSubjectAlternativeNames() {
+        return subjectAlternativeNames;
+    }
+
+    public void setSubjectAlternativeNames(List<String> subjectAlternativeNames) {
+        this.subjectAlternativeNames = subjectAlternativeNames;
     }
 
     public void setSubjectName(String subjectName) {
@@ -226,6 +267,14 @@ public class CertificateEntity {
 
     public void setCrlSign(boolean crlSign) {
         this.crlSign = crlSign;
+    }
+
+    public Integer getPathLength() {
+        return pathLength;
+    }
+
+    public void setPathLength(Integer pathLength) {
+        this.pathLength = pathLength;
     }
 
     public String getCertificatePem() {

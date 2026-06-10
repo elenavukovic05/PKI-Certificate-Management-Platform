@@ -16,11 +16,12 @@ public class CACertificatePreviewDTO {
     boolean keyEncipherment;
     boolean keyCertSign;
     boolean crlSign;
+    Integer pathLength;
     private String organizationName;
 
     public CACertificatePreviewDTO(Long id, String subjectName, CertificateType type, Date startDate,
                                    Date endDate, boolean isCA, boolean digitalSignature, boolean keyEncipherment,
-                                   boolean keyCertSign, boolean crlSign, String organizationName) {
+                                   boolean keyCertSign, boolean crlSign,Integer pathLength, String organizationName) {
         this.id = id;
         this.subjectName = subjectName;
         this.type = type;
@@ -31,6 +32,7 @@ public class CACertificatePreviewDTO {
         this.keyEncipherment = keyEncipherment;
         this.keyCertSign = keyCertSign;
         this.crlSign = crlSign;
+        this.pathLength = pathLength;
         this.organizationName = organizationName;
     }
 
@@ -100,6 +102,14 @@ public class CACertificatePreviewDTO {
 
     public boolean isKeyCertSign() {
         return keyCertSign;
+    }
+
+    public Integer getPathLength() {
+        return pathLength;
+    }
+
+    public void setPathLength(Integer pathLength) {
+        this.pathLength = pathLength;
     }
 
     public void setKeyCertSign(boolean keyCertSign) {

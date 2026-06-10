@@ -3,6 +3,7 @@ package pki_project.pki.dto;
 import pki_project.pki.model.enums.CertificateType;
 
 import java.util.Date;
+import java.util.List;
 
 public class CertificateRequestDTO {
     String commonName;
@@ -20,6 +21,8 @@ public class CertificateRequestDTO {
     boolean keyEncipherment;
     boolean keyCertSign;
     boolean crlSign;
+    Integer pathLength;
+    private List<String> subjectAlternativeNames;
     private Long organizationId;
     private CertificateType type;
     private Long ownerId;
@@ -45,6 +48,32 @@ public class CertificateRequestDTO {
         this.crlSign = crlSign;
         this.organizationId = organizationId;
         this.type = type;
+    }
+
+    public CertificateRequestDTO() {
+    }
+
+    public CertificateRequestDTO(String commonName, String name, String lastName, String organization, String email, String organizationalUnit, String country, Date startDate, Date endDate, Long issuerId, boolean isCA, boolean digitalSignature, boolean keyEncipherment, boolean keyCertSign, boolean crlSign, Integer pathLength, List<String> subjectAlternativeNames, Long organizationId, CertificateType type, Long ownerId) {
+        this.commonName = commonName;
+        this.name = name;
+        this.lastName = lastName;
+        this.organization = organization;
+        this.email = email;
+        this.organizationalUnit = organizationalUnit;
+        this.country = country;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.issuerId = issuerId;
+        this.isCA = isCA;
+        this.digitalSignature = digitalSignature;
+        this.keyEncipherment = keyEncipherment;
+        this.keyCertSign = keyCertSign;
+        this.crlSign = crlSign;
+        this.pathLength = pathLength;
+        this.subjectAlternativeNames = subjectAlternativeNames;
+        this.organizationId = organizationId;
+        this.type = type;
+        this.ownerId = ownerId;
     }
 
     public String getCommonName() {
@@ -77,6 +106,14 @@ public class CertificateRequestDTO {
 
     public void setOrganization(String organization) {
         this.organization = organization;
+    }
+
+    public List<String> getSubjectAlternativeNames() {
+        return subjectAlternativeNames;
+    }
+
+    public void setSubjectAlternativeNames(List<String> subjectAlternativeNames) {
+        this.subjectAlternativeNames = subjectAlternativeNames;
     }
 
     public String getEmail() {
@@ -131,8 +168,8 @@ public class CertificateRequestDTO {
         return isCA;
     }
 
-    public void setCA(boolean CA) {
-        isCA = CA;
+    public void setIsCA(boolean isCA) {
+        this.isCA = isCA;
     }
 
     public boolean isDigitalSignature() {
@@ -165,6 +202,14 @@ public class CertificateRequestDTO {
 
     public void setCrlSign(boolean crlSign) {
         this.crlSign = crlSign;
+    }
+
+    public Integer getPathLength() {
+        return pathLength;
+    }
+
+    public void setPathLength(Integer pathLength) {
+        this.pathLength = pathLength;
     }
 
     public CertificateType getType() {
