@@ -30,7 +30,14 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
           )
         }
 
-        authService.logout();
+        //authService.logout();
+
+        //DODATO ZBOG GRESKE KOJA JE NASTAJALA KAD SE POKUSA KORISNIK REGISTROVATI, NIJE MU DOZVOLJAVALO
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('temp_token');
+        localStorage.removeItem('refresh_token');
+        router.navigate(['/login']);
+      return throwError(() => err);
       }
       return throwError(() => err);
     })

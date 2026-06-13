@@ -51,7 +51,11 @@ public class SecurityConfig {
                                 "/api/v1/auth/login",
                                 "/error", "/api/v1/auth/refresh", "/api/v1/auth/logout",
                                 "/error",
-                                "/api/v1/auth/2fa/verify"
+                                "/api/v1/auth/2fa/verify",
+                                "/api/v1/organizations/all",
+                                "/api/v1/auth/register",
+                                "/api/v1/auth/activate-user",
+                                "/api/v1/auth/activation-challenge"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

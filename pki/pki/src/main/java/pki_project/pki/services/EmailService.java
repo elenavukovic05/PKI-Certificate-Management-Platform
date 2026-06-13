@@ -14,6 +14,20 @@ public class EmailService {
     @Value("${app.frontend-url}")
     private String frontendUrl;
 
+    public void sendUserActivationEmail(String email, String token){
+        String activationLink = frontendUrl + "/activate-user?token=" + token;
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(email);
+        message.setSubject("Aktivacija korisničkog naloga");
+        message.setText(
+                "Vaš nalog je kreiran.\n\n" +
+                        "Kliknite na link da aktivirate nalog:\n" +
+                        activationLink + "\n\n" +
+                        "Link važi 24 sata."
+        );
+        mailSender.send(message);
+    }
+
     public void sendCAUserActivationEmail(String email, String token) {
         String activationLink = frontendUrl + "/activate-ca-user?token=" + token;
 

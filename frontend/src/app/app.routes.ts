@@ -9,6 +9,8 @@ import { AddCaUsersComponent } from './features/add-ca-users/add-ca-users.compon
 import { AddOrganizationsComponent } from './features/add-organizations/add-organizations.component';
 import { ActivateCaUser } from './features/activate-ca-user/activate-ca-user';
 import { CsrFormComponent } from './features/csr-form/csr-form.component';
+import { RegisterComponent } from './features/register/register.component';
+import { ActivateUserComponent } from './features/activate-user/activate-user.component';
 
 export const routes: Routes = [
     {
@@ -41,8 +43,16 @@ export const routes: Routes = [
         component : ActivateCaUser
     },
     {
+        path: 'activate-user',
+        component : ActivateUserComponent
+    },
+    {
         path: 'login',
         component: LoginComponent
+    },
+    {
+        path: 'register',
+        component : RegisterComponent
     },
     {
         path: 'issue-certificate',

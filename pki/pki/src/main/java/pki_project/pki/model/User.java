@@ -55,6 +55,11 @@ public class User implements UserDetails {
     @Column(name = "activation_token_expires_at")
     private Date activationTokenExpiresAt;
 
+    private String activationChallenge;
+
+    @Column(columnDefinition = "TEXT")
+    private String encryptedActivationChallenge;
+
     @Column(name = "two_factor_enabled", nullable = false)
     private boolean twoFactorEnabled = false;
 
@@ -171,6 +176,22 @@ public class User implements UserDetails {
 
     public void setActivationToken(String activationToken) {
         this.activationToken = activationToken;
+    }
+
+    public String getActivationChallenge() {
+        return activationChallenge;
+    }
+
+    public void setActivationChallenge(String activationChallenge) {
+        this.activationChallenge = activationChallenge;
+    }
+
+    public String getEncryptedActivationChallenge() {
+        return encryptedActivationChallenge;
+    }
+
+    public void setEncryptedActivationChallenge(String encryptedActivationChallenge) {
+        this.encryptedActivationChallenge = encryptedActivationChallenge;
     }
 
     public Date getActivationTokenExpiresAt() {
