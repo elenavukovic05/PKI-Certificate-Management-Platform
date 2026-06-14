@@ -8,6 +8,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import pki_project.pki.dto.ActivateCAUserDTO;
 import pki_project.pki.dto.CAUserDTO;
+import pki_project.pki.dto.ChangePasswordDTO;
 import pki_project.pki.dto.UserDTO;
 import pki_project.pki.model.Organization;
 import pki_project.pki.model.User;
@@ -65,6 +66,15 @@ public class UserService implements UserDetailsService {
                 );
     }
 
+    public void changePassword(ChangePasswordDTO dto){
+        User user = userRepository.findByUsername(dto.getUsername())
+                .orElseThrow(()-> new RuntimeException("User not found"));
+        if(dto.getNewPassword() == null)
+            throw new RuntimeException("New password is null");
+        String encodedPassword = passwordEncoder.encode(dto.getNewPassword());
+        user.setPassword(encodedPassword);
+        userRepository.save(user);
+    }
     public List<UserDTO> getRegularUsers() {
         List<User> users = userRepository.findByRole(Role.USER);
 

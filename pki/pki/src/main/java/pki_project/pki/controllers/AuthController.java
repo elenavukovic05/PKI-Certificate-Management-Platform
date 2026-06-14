@@ -46,10 +46,28 @@ public class AuthController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+    @PostMapping("/verify-password-recovery")
+    public ResponseEntity<String> verifyPasswordRecovery(@RequestBody VerifyPasswordRecoveryDTO request){
+        try{
+            authService.verifyPasswordRecovery(request);
+            return ResponseEntity.ok("User verified successfully.");
+        }catch (RuntimeException e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
     @GetMapping("/activation-challenge")
     public ResponseEntity<String> getActivationChallenge(@RequestParam String activationToken){
         try{
             String activationChallenge = authService.getActivationChallenge(activationToken);
+            return ResponseEntity.ok(activationChallenge);
+        }catch (RuntimeException e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    @GetMapping("/activation-challenge-by-username")
+    public ResponseEntity<String> getActivationChallengeByUsername(@RequestParam String username){
+        try{
+            String activationChallenge = authService.getActivationChallengeByUsername(username);
             return ResponseEntity.ok(activationChallenge);
         }catch (RuntimeException e){
             return ResponseEntity.badRequest().body(e.getMessage());

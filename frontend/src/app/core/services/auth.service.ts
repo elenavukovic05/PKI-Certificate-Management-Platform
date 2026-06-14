@@ -6,6 +6,7 @@ import { Observable, Subject } from 'rxjs';
 import { environment } from '../../../env/environment';
 import { RegisterDTO } from '../models/register.model';
 import { ActivateUserDTO } from '../models/activate-user.model';
+import { VerifyPasswordRecoveryDTO } from '../models/verify-password-recovery.model';
 
 export interface LoginResponse {
   accessToken: string;
@@ -51,12 +52,28 @@ export class AuthService {
         responseType: 'text'
       }); 
   }
+  verifyPasswordRecovery(dto: VerifyPasswordRecoveryDTO) : Observable<string> {
+      return this.http.post(`${environment.apiHost}/auth/verify-password-recovery`, dto, {
+        responseType: 'text'
+      }); 
+  }
   getActivationChallenge(activationToken: string): Observable<string> {
     return this.http.get(
       `${environment.apiHost}/auth/activation-challenge`,
       {
         params: {
           activationToken: activationToken
+        },
+        responseType: 'text'
+      }
+    );
+  }
+  getActivationChallengeByUsername(username: string): Observable<string> {
+    return this.http.get(
+      `${environment.apiHost}/auth/activation-challenge-by-username`,
+      {
+        params: {
+          username : username
         },
         responseType: 'text'
       }

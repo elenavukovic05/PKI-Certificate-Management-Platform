@@ -100,15 +100,28 @@ public class AuthService {
         if(!user.getActivationChallenge().equals(dto.getDecryptedActivationChallenge()))
             throw new RuntimeException("Invalid activation");
         user.setEnabled(true);
-        user.setActivationChallenge(null);
-        user.setEncryptedActivationChallenge(null);
         user.setActivationToken(null);
         userRepository.save(user);
+    }
+    public void verifyPasswordRecovery(VerifyPasswordRecoveryDTO dto){
+        User user = userRepository.findByUsername(dto.getUsername())
+                .orElseThrow(()-> new RuntimeException("User not found"));
+
+        if(!user.getActivationChallenge().equals(dto.getDecryptedActivationChallenge()))
+            throw new RuntimeException("Invalid activation");
     }
 
     public String getActivationChallenge(String activationToken){
         User user = userRepository.findByActivationToken(activationToken)
                 .orElseThrow(() -> new RuntimeException("Invalid activation token"));
+        String activationChallenge = user.getEncryptedActivationChallenge();
+        if(activationChallenge == null)
+            throw new RuntimeException("Activation challenge not found");
+        return  activationChallenge;
+    }
+    public String getActivationChallengeByUsername(String username){
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
         String activationChallenge = user.getEncryptedActivationChallenge();
         if(activationChallenge == null)
             throw new RuntimeException("Activation challenge not found");

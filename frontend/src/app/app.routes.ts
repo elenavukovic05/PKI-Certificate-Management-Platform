@@ -11,6 +11,8 @@ import { ActivateCaUser } from './features/activate-ca-user/activate-ca-user';
 import { CsrFormComponent } from './features/csr-form/csr-form.component';
 import { RegisterComponent } from './features/register/register.component';
 import { ActivateUserComponent } from './features/activate-user/activate-user.component';
+import { ChangePasswordComponent } from './features/change-password/change-password.component';
+import { VerificationForPasswordRecoveryComponent } from './features/verification-for-password-recovery/verification-for-password-recovery.component';
 
 export const routes: Routes = [
     {
@@ -49,6 +51,14 @@ export const routes: Routes = [
     {
         path: 'login',
         component: LoginComponent
+    },
+    {
+        path: 'change-password',
+        component : ChangePasswordComponent
+    },
+    {
+        path : 'verification-for-password-recovery',
+        component : VerificationForPasswordRecoveryComponent
     },
     {
         path: 'register',
