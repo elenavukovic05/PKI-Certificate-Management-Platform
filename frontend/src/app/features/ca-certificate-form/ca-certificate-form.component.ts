@@ -34,6 +34,8 @@ export class CaCertificateFormComponent {
     keyEncipherment: false,
     keyCertSign: false,
     crlSign: false,
+    pathLength :null,
+    subjectAlternativeNames : [],
     organizationId: null,
     type: 'END_ENTITY',
     ownerId: null
@@ -46,6 +48,9 @@ export class CaCertificateFormComponent {
   ) {}
 
   ngOnInit(): void {
+    const today = new Date().toISOString().split('T')[0];
+    this.dto.startDate = today;
+    
     this.certService.getOrganizationCertificates().subscribe({
       next: (data) => {
         this.issuers = data.filter(c => c.isCA);
@@ -68,19 +73,48 @@ export class CaCertificateFormComponent {
       }
     });
   }
+  addSan(): void {
+    this.dto.subjectAlternativeNames.push('');
+  }
 
+  removeSan(index: number): void {
+    this.dto.subjectAlternativeNames.splice(index, 1);
+  }
   submit(): void {
     this.successMessage = '';
     this.errorMessage = '';
     this.cdr.detectChanges();
 
-    
+    if(this.dto.type !== 'INTERMEDIATE'){
+      this.dto.pathLength = null;
+    }
+    if (this.dto.type === 'INTERMEDIATE' && !Number.isInteger(this.dto.pathLength)) {
+      this.errorMessage = 'Path length must be a whole number.';
+      this.cdr.detectChanges();
+      return;
+    }
+    if (this.dto.type === 'INTERMEDIATE' && this.dto.pathLength !== null && this.dto.pathLength < 0) {
+      this.errorMessage = 'Path length cannot be negative.';
+      this.cdr.detectChanges();
+      return;
+    }
+
     if (!this.dto.issuerId) {
       this.errorMessage = 'Please select an issuer.';
       this.cdr.detectChanges();
       return;
     }
+    const endDate = new Date(this.dto.endDate);
+    const now = new Date();
 
+    if (endDate <= now) {
+      this.errorMessage = 'End date must be in the future';
+      this.cdr.detectChanges();
+      return;
+    }
+    this.successMessage = '';
+    this.errorMessage = '';
+    this.cdr.detectChanges();
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(this.dto.email)) {
       this.errorMessage = 'Please enter a valid email address.';
@@ -100,14 +134,26 @@ export class CaCertificateFormComponent {
       }
     }
 
+    if (this.dto.type !== 'END_ENTITY') {
+      this.dto.subjectAlternativeNames = [];
+    }
+    if (this.dto.type === 'END_ENTITY') {
+      this.dto.subjectAlternativeNames = this.dto.subjectAlternativeNames.filter(san => san.trim() !== '');
+    }
+
     this.certService.createCertificateAsCAUser(this.dto).subscribe({
       next: () => {
         this.successMessage = 'Certificate successfully created!';
         this.cdr.detectChanges();
       },
       error: (err) => {
-        this.errorMessage = err.error || 'Failed to create certificate.';
-        this.cdr.detectChanges();
+        this.errorMessage =
+          typeof err.error === 'string'
+            ? err.error
+            : err.error?.message || err.message || 'Something went wrong';
+
+          this.successMessage = '';
+          this.cdr.detectChanges();
       }
     });
   }
@@ -126,6 +172,7 @@ export class CaCertificateFormComponent {
     } else {
       this.dto.isCA = false;
       this.dto.keyCertSign = false;
+      this.dto.pathLength = null
     }
     this.cdr.detectChanges();
   }

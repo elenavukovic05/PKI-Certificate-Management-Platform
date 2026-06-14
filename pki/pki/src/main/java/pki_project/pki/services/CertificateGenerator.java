@@ -1,5 +1,6 @@
 package pki_project.pki.services;
 
+import org.bouncycastle.asn1.x509.*;
 import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
@@ -9,13 +10,11 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
-import org.bouncycastle.asn1.x509.BasicConstraints;
-import org.bouncycastle.asn1.x509.Extension;
-import org.bouncycastle.asn1.x509.KeyUsage;
 import org.springframework.stereotype.Component;
 import pki_project.pki.dto.CertificateRequestDTO;
 import pki_project.pki.model.Issuer;
 import pki_project.pki.model.Subject;
+import pki_project.pki.model.enums.CertificateType;
 
 import java.math.BigInteger;
 import java.security.Security;
@@ -47,10 +46,21 @@ public class CertificateGenerator {
                     subject.getPublicKey());
 
 
+            BasicConstraints basicConstraints;
+            if (certificateRequest.isCA()) {
+                if (certificateRequest.getPathLength() != null) {
+                    basicConstraints = new BasicConstraints(certificateRequest.getPathLength());
+                } else {
+                    basicConstraints = new BasicConstraints(true);
+                }
+            } else {
+                basicConstraints = new BasicConstraints(false);
+            }
+
             certGen.addExtension(
                     Extension.basicConstraints,
                     true,
-                    new BasicConstraints(certificateRequest.isCA())
+                    basicConstraints
             );
 
             int keyUsage = 0;
@@ -76,6 +86,25 @@ public class CertificateGenerator {
                     true,
                     new KeyUsage(keyUsage)
             );
+
+            if (certificateRequest.getType() == CertificateType.END_ENTITY
+                    && certificateRequest.getSubjectAlternativeNames() != null
+                    && !certificateRequest.getSubjectAlternativeNames().isEmpty()) {
+
+                GeneralName[] sanNames = certificateRequest.getSubjectAlternativeNames()
+                        .stream()
+                        .filter(san -> san != null && !san.isBlank())
+                        .map(san -> new GeneralName(GeneralName.dNSName, san))
+                        .toArray(GeneralName[]::new);
+
+                if (sanNames.length > 0) {
+                    certGen.addExtension(
+                            Extension.subjectAlternativeName,
+                            false,
+                            new GeneralNames(sanNames)
+                    );
+                }
+            }
             X509CertificateHolder certHolder = certGen.build(contentSigner);
             JcaX509CertificateConverter certConverter = new JcaX509CertificateConverter();
             certConverter = certConverter.setProvider("BC");

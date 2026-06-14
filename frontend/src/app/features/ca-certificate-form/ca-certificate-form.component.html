@@ -73,7 +73,7 @@
 
   <div class="form-group">
     <label>Start Date</label>
-    <input type="date" [(ngModel)]="dto.startDate" />
+    <input type="date" [(ngModel)]="dto.startDate" readonly />
   </div>
 
   <div class="form-group">
@@ -87,7 +87,37 @@
     <label><input type="checkbox" [(ngModel)]="dto.keyEncipherment" /> Key Encipherment</label>
     <label><input type="checkbox" [(ngModel)]="dto.crlSign" /> CRL Sign</label>
   </div>
+  <div *ngIf="dto.type === 'INTERMEDIATE'" class="form-group">
+  <label>Path Length</label>
+  <input
+    type="number"
+    [(ngModel)]="dto.pathLength"
+    min="0"
+    step="1"
+  />
+</div>
+<div *ngIf="dto.type === 'END_ENTITY'" class="form-group">
+  <h3>Subject Alternative Names (SAN)</h3>
 
+  <div
+    *ngFor="let san of dto.subjectAlternativeNames; let i = index"
+    class="san-row"
+  >
+    <input
+      type="text"
+      [(ngModel)]="dto.subjectAlternativeNames[i]"
+      placeholder="e.g. user@gmail.com or device01.local"
+    />
+
+    <button type="button" (click)="removeSan(i)">
+      Remove
+    </button>
+  </div>
+
+  <button type="button" (click)="addSan()">
+    + Add SAN
+  </button>
+</div>
   <div class="alert alert-success" *ngIf="successMessage">
     <span class="alert-icon">✓</span>
     {{ successMessage }}

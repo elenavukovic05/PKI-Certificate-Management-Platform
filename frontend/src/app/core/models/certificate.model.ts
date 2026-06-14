@@ -26,6 +26,7 @@ export interface CACertificatePreviewDTO{
     keyEncipherment : boolean;
     keyCertSign : boolean ;
     crlSign :boolean ;
+    pathLength : number;
     organizationName : string;
 }
 export interface CertificateRequestDTO {
@@ -44,6 +45,8 @@ export interface CertificateRequestDTO {
   keyEncipherment: boolean;
   keyCertSign: boolean;
   crlSign: boolean;
+  pathLength : number | null;
+  subjectAlternativeNames : string[];
   organizationId: number | null;
   type: string;
   ownerId?: number | null;

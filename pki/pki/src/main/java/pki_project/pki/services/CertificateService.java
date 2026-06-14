@@ -64,9 +64,9 @@ public class CertificateService {
                     .findById(certificateRequest.getIssuerId())
                     .orElseThrow(() -> new RuntimeException("Issuer not found"));
 
-            boolean isIssuerValid = validateIssuer(issuerEntity, certificateRequest);
-            if(!isIssuerValid){
-                throw new RuntimeException("Issuer certificate is not valid");
+            boolean isChainValid = validateCertificateChain(issuerEntity, certificateRequest.getEndDate());
+            if(!isChainValid){
+                throw new RuntimeException("Certificate chain of trust is not valid");
             }
             organization = issuerEntity.getOrganization();
             if (organization == null) {
@@ -101,10 +101,11 @@ public class CertificateService {
                 certificateRequest.isKeyEncipherment(),
                 certificateRequest.isKeyCertSign(),
                 certificateRequest.isCrlSign(),
+                certificateRequest.getPathLength(),
                 pem,
                 encryptedPrivateKey
         );
-        
+        certificateEntity.setSubjectAlternativeNames(certificateRequest.getSubjectAlternativeNames());
         certificateEntity.setSubjectPublicKey(
             java.util.Base64.getEncoder().encodeToString(subject.getPublicKey().getEncoded())
         );
@@ -122,8 +123,9 @@ public class CertificateService {
         // ##############################
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.isAuthenticated() && 
-            certificateRequest.getType() == CertificateType.END_ENTITY) {
+        if (auth != null && auth.isAuthenticated() &&
+                (certificateRequest.getType() == CertificateType.END_ENTITY ||
+                        certificateRequest.getType() == CertificateType.INTERMEDIATE )) {
             String username = auth.getName();
             User currentUser = (User) userDetailsService.loadUserByUsername(username);
             //certificateEntity.setOwner(currentUser)
@@ -166,6 +168,28 @@ public class CertificateService {
                 throw new RuntimeException("Root/Intermediate certificate must have isCA and keyCertSign set to true");
             }
         }
+        if(certificateRequest.getPathLength()!= null) {
+            if(certificateRequest.getType() == CertificateType.END_ENTITY ||
+                    certificateRequest.getType() == CertificateType.ROOT )
+                throw new RuntimeException("End entity and root certificate can not have path length extension!");
+            else{
+                //provjera da li je path length <= roditeljskom
+                CertificateEntity issuerEntity = certificateRepository
+                        .findById(certificateRequest.getIssuerId())
+                        .orElseThrow(() -> new RuntimeException("Issuer not found"));
+                if(issuerEntity.getPathLength() != null){
+                    if(certificateRequest.getPathLength() < 0)
+                        throw new RuntimeException("Path length can not be negative!");
+                    if(issuerEntity.getPathLength() == 0)
+                        throw new RuntimeException("This issuer can issue only end entity certificates!");
+                    if(certificateRequest.getPathLength() > issuerEntity.getPathLength() - 1)
+                        throw new RuntimeException("Child CA path length exceeds issuer path length constraint!");
+
+                }
+
+            }
+        }
+
         if (certificateRequest.getType() == CertificateType.END_ENTITY) {
             if (certificateRequest.isCA()) {
                 throw new RuntimeException("End entity certificate cannot have isCA set to true");
@@ -174,26 +198,45 @@ public class CertificateService {
 
     }
 
-    boolean validateIssuer(CertificateEntity issuer, CertificateRequestDTO certificateRequest){
+    public boolean validateCertificateChain(CertificateEntity issuer, Date certificateEndDate){
         try{
-            if(issuer.getStartDate().after(Date.from(Instant.now()))
-                    || issuer.getEndDate().before(Date.from(Instant.now())))
-                return false;
-            if (certificateRequest.getEndDate().after(issuer.getEndDate())) {
+            if (issuer == null) {
                 return false;
             }
-            if (!issuer.isCA()) return false;
-            if (!issuer.isKeyCertSign()) return false;
-            if(issuer.getStatus() == CertificateStatus.REVOKED)
+            if(issuer.getStartDate().after(Date.from(Instant.now()))
+                    || issuer.getEndDate().before(Date.from(Instant.now()))){
                 return false;
+            }
+
+            if (certificateEndDate.after(issuer.getEndDate())) {
+                return false;
+            }
+            if (!issuer.isCA()) {
+                return false;
+            }
+            if (!issuer.isKeyCertSign()){
+                return false;
+            }
+            if(issuer.getStatus() == CertificateStatus.REVOKED){
+                return false;
+            }
+
             boolean validDigitalSign = validateDigitalSign(issuer);
-            if(!validDigitalSign)
+            if(!validDigitalSign){
                 return false;
-            return true;
+            }
+
+            //end of recursion
+            if (issuer.getType() == CertificateType.ROOT)
+                return true;
+            //validate issuer's issuer
+            return validateCertificateChain(
+                    issuer.getIssuerCertificate(),
+                    issuer.getEndDate()
+            );
         }catch (Exception e) {
             return false;
         }
-
     }
     public boolean validateDigitalSign(CertificateEntity issuer) throws CertificateException, NoSuchAlgorithmException, SignatureException, InvalidKeyException, NoSuchProviderException {
         X509Certificate issuerCertificate = pemToX509Certificate(issuer.getCertificatePem());
@@ -295,6 +338,7 @@ public class CertificateService {
                     certificate.getType(), certificate.getStartDate(), certificate.getEndDate(),
                     certificate.isCA(), certificate.isDigitalSignature(),
                     certificate.isKeyEncipherment(), certificate.isKeyCertSign(),certificate.isCrlSign(),
+                    certificate.getPathLength(),
                     certificate.getOrganization().getName()));
         }
         return dto;
