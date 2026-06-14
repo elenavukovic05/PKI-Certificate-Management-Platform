@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../env/environment';
 import { CAUserDTO } from '../models/ca-user.model';
 import { ActivateCAUserDTO } from '../models/activate-ca-user.model';
+import { ChangePasswordDTO } from '../models/change-password.model';
 
 
 @Injectable({
@@ -17,6 +18,12 @@ export class UserService {
     }
     activateCAUser(dto: ActivateCAUserDTO): Observable<string> {
       return this.http.post(`${environment.apiHost}/admin/activate-ca-user`, dto, {
+        responseType: 'text'
+      });
+    }
+
+    changePassword(dto: ChangePasswordDTO): Observable<string> {
+      return this.http.post(`${environment.apiHost}/users/change-password`, dto, {
         responseType: 'text'
       });
     }

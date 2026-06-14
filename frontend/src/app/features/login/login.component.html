@@ -23,6 +23,12 @@
         placeholder="Enter password"
         (keyup.enter)="login()"
       />
+      <p>Forgot password?</p>
+    <a
+      [routerLink]="['/verification-for-password-recovery']"
+      [queryParams]="{ username: username }">
+      Change password
+    </a>
     </div>
     
     <div *ngIf="errorMessage" class="error-message">
@@ -32,6 +38,9 @@
     <button (click)="login()" [disabled]="!username || !password">
       Login
     </button>
+    <p>Don't have an account?</p>
+    <a routerLink ="/register">Register here</a>
+   
   </div>
   
   <!-- 2FA verifikacija -->

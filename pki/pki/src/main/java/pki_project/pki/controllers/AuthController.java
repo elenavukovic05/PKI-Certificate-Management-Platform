@@ -3,11 +3,10 @@ package pki_project.pki.controllers;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.*;
-import pki_project.pki.dto.LoginRequestDTO;
-import pki_project.pki.dto.LoginResponseDTO;
-import pki_project.pki.dto.RefreshRequestDTO;
+import pki_project.pki.dto.*;
 import pki_project.pki.services.AuthService;
 
 @RestController
@@ -29,7 +28,51 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
-
+    @PostMapping("/register")
+    public ResponseEntity<String> register( @RequestBody RegisterDTO request){
+        try{
+            authService.register(request);
+            return ResponseEntity.ok("User registered successfully.");
+        }catch(RuntimeException e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    @PostMapping("/activate-user")
+    public ResponseEntity<String> activateUser(@RequestBody ActivateUserDTO request){
+        try{
+            authService.activateUser(request);
+            return ResponseEntity.ok("User activated successfully.");
+        }catch (RuntimeException e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    @PostMapping("/verify-password-recovery")
+    public ResponseEntity<String> verifyPasswordRecovery(@RequestBody VerifyPasswordRecoveryDTO request){
+        try{
+            authService.verifyPasswordRecovery(request);
+            return ResponseEntity.ok("User verified successfully.");
+        }catch (RuntimeException e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    @GetMapping("/activation-challenge")
+    public ResponseEntity<String> getActivationChallenge(@RequestParam String activationToken){
+        try{
+            String activationChallenge = authService.getActivationChallenge(activationToken);
+            return ResponseEntity.ok(activationChallenge);
+        }catch (RuntimeException e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    @GetMapping("/activation-challenge-by-username")
+    public ResponseEntity<String> getActivationChallengeByUsername(@RequestParam String username){
+        try{
+            String activationChallenge = authService.getActivationChallengeByUsername(username);
+            return ResponseEntity.ok(activationChallenge);
+        }catch (RuntimeException e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
     @PostMapping("/refresh")
     public ResponseEntity<?> login (@Valid @RequestBody RefreshRequestDTO request){
         try{

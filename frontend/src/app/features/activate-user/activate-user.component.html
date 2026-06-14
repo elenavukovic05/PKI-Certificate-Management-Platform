@@ -1,0 +1,24 @@
+<div class = "activate-container">
+  <form class="form-container">
+  <h1>Activate User Account</h1>
+
+  <div *ngIf="errorMessage" class="alert alert-error">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="successMessage" class="alert alert-success">
+    {{ successMessage }}
+  </div>
+  <label>
+    Import your private key (that was downloaded during registration)
+    <input
+     type = "file"
+     accept=".pem"
+     (change)="onPrivateKeySelected($event)" />
+  </label>
+  <button (click)="onSubmit()">
+    Activate account
+  </button>
+</form>
+</div>
+
