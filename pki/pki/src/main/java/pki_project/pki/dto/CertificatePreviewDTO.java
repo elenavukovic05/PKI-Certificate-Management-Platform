@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import pki_project.pki.model.enums.CertificateStatus;
 import pki_project.pki.model.enums.CertificateType;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 public class CertificatePreviewDTO {

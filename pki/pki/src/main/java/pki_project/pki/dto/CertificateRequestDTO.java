@@ -2,6 +2,7 @@ package pki_project.pki.dto;
 
 import pki_project.pki.model.enums.CertificateType;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -53,7 +54,12 @@ public class CertificateRequestDTO {
     public CertificateRequestDTO() {
     }
 
-    public CertificateRequestDTO(String commonName, String name, String lastName, String organization, String email, String organizationalUnit, String country, Date startDate, Date endDate, Long issuerId, boolean isCA, boolean digitalSignature, boolean keyEncipherment, boolean keyCertSign, boolean crlSign, Integer pathLength, List<String> subjectAlternativeNames, Long organizationId, CertificateType type, Long ownerId) {
+    public CertificateRequestDTO(String commonName, String name, String lastName, String organization,
+                                 String email, String organizationalUnit, String country,
+                                 Date startDate, Date endDate, Long issuerId,
+                                 boolean isCA, boolean digitalSignature, boolean keyEncipherment,
+                                 boolean keyCertSign, boolean crlSign, Integer pathLength,
+                                 List<String> subjectAlternativeNames, Long organizationId, CertificateType type, Long ownerId) {
         this.commonName = commonName;
         this.name = name;
         this.lastName = lastName;

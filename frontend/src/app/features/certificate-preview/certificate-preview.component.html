@@ -1,3 +1,10 @@
+<div *ngIf="errorMessage" class="alert alert-error">
+  {{ errorMessage }}
+</div>
+
+<div *ngIf="successMessage" class="alert alert-success">
+  {{ successMessage }}
+</div>
 <div class="cert-selector">
   <button *ngFor="let cert of certificates" 
           class="cert-chip"
@@ -17,6 +24,7 @@
     <div class="download-actions">
       <button class="btn-download" (click)="downloadCertificate('pem')"> Download PEM </button>
       <button class="btn-download primary" (click)="downloadCertificate('cer')"> Download CER </button>
+      <button class="btn-download" (click)="revokeCertificate(selectedCert.id)">Revoke certificate</button>
       <button *ngIf="selectedCert.canDownloadPkcs12" class="btn-download" (click)="openPkcs12Modal()"> Download PKCS12 </button>
     </div>
   </div>
@@ -74,6 +82,10 @@
         <span class="label">Expires On</span>
         <span class="value">{{ selectedCert?.endDate | date:'EEEE, MMM d, y, h:mm:ss a' }}</span>
       </div>
+      <div class="info-row">
+        <span class="label">Status</span>
+        <span class="value">{{ selectedCert?.status }}</span>
+      </div>
     </div>
 
   </div>
@@ -102,4 +114,40 @@
         <button (click)="confirmPkcs12Download()">Download</button>
         <button (click)="showPkcs12Modal = false">Cancel</button>
     </div>
+</div>
+
+<!--revoke certificate modal -->
+<div *ngIf="showRevokeCertificateModal" class="modal-overlay">
+  <div class="modal revoke-modal">
+
+    <h3>Revoke Certificate</h3>
+
+    <p class="modal-description">
+      Select the reason for certificate revocation.
+    </p>
+
+    <select class="reason-select" [(ngModel)]="revocationReason">
+      <option value="UNSPECIFIED">Unspecified</option>
+      <option value="KEY_COMPROMISE">Key Compromise</option>
+      <option value="CA_COMPROMISE">CA Compromise</option>
+      <option value="AFFILIATION_CHANGED">Affiliation Changed</option>
+      <option value="SUPERSEDED">Superseded</option>
+      <option value="CESSATION_OF_OPERATION">Cessation Of Operation</option>
+      <option value="CERTIFICATE_HOLD">Certificate Hold</option>
+      <option value="PRIVILEGE_WITHDRAWN">Privilege Withdrawn</option>
+      <option value="AA_COMPROMISE">AA Compromise</option>
+    </select>
+
+    <div class="modal-actions">
+      <button class="btn-danger" (click)="chooseRevocationReason()">
+        Revoke
+      </button>
+
+      <button class="btn-secondary"
+              (click)="showRevokeCertificateModal = false">
+        Cancel
+      </button>
+    </div>
+
+  </div>
 </div>

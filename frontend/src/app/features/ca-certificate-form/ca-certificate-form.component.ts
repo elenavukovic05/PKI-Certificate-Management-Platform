@@ -140,8 +140,20 @@ export class CaCertificateFormComponent {
     if (this.dto.type === 'END_ENTITY') {
       this.dto.subjectAlternativeNames = this.dto.subjectAlternativeNames.filter(san => san.trim() !== '');
     }
+     //adjusted because of time zone difference in java date format on server
+    const startDateAdjusted = new Date(this.dto.startDate);
+    startDateAdjusted.setHours(startDateAdjusted.getHours() - 2);
 
-    this.certService.createCertificateAsCAUser(this.dto).subscribe({
+    const endDateAdjusted = new Date(this.dto.endDate);
+    endDateAdjusted.setHours(endDateAdjusted.getHours() - 2);
+
+    const dtoToSend: CertificateRequestDTO = {
+      ...this.dto,
+      startDate: startDateAdjusted.toISOString(),
+      endDate: endDateAdjusted.toISOString()
+    };
+
+    this.certService.createCertificateAsCAUser(dtoToSend).subscribe({
       next: () => {
         this.successMessage = 'Certificate successfully created!';
         this.cdr.detectChanges();

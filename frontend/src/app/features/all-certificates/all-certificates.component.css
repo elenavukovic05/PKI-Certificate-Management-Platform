@@ -98,6 +98,10 @@ button:hover {
   background-color: #fdedec;
   color: #c0392b;
 }
+.alert-success {
+  background-color: #fdedec;
+  color: green;
+}
 
 .empty-message {
   text-align: center;
@@ -161,4 +165,65 @@ button:hover {
 
 .modal-actions button {
   margin: 0;
+}
+.revoke-modal {
+  width: 450px;
+}
+
+.modal-description {
+  color: #6c6861;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.reason-select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #d8d5d0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+  background: white;
+  color: #3b3936;
+}
+
+.reason-select:focus {
+  outline: none;
+  border-color: #2c2b29;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.btn-danger {
+  background-color: #c0392b;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.7rem 1.2rem;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.btn-danger:hover {
+  background-color: #a93226;
+}
+
+.btn-secondary {
+  background-color: #f4f3ef;
+  color: #3b3936;
+  border: 1px solid #d8d5d0;
+  border-radius: 8px;
+  padding: 0.7rem 1.2rem;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background-color: #e8e5df;
 }

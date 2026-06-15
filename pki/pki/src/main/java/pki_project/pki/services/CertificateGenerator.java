@@ -25,12 +25,14 @@ import java.util.Date;
 
 @Component
 public class CertificateGenerator {
+
     public CertificateGenerator() {
         Security.addProvider(new BouncyCastleProvider());
     }
 
     public static X509Certificate generateCertificate(Subject subject, Issuer issuer,
-                                                      CertificateRequestDTO certificateRequest, BigInteger serialNumber) {
+                                                      CertificateRequestDTO certificateRequest,
+                                                      BigInteger serialNumber, String crlIssuerSerialNumber) {
         try {
 
             JcaContentSignerBuilder builder = new JcaContentSignerBuilder("SHA256WithRSAEncryption");
@@ -105,6 +107,35 @@ public class CertificateGenerator {
                     );
                 }
             }
+            //distribution point extension
+            GeneralName crlUrl = new GeneralName(
+                    GeneralName.uniformResourceIdentifier,
+                    "http://localhost:8080/api/certificates/crl/" + crlIssuerSerialNumber
+            );
+
+            DistributionPointName distributionPointName =
+                    new DistributionPointName(
+                            new GeneralNames(crlUrl)
+                    );
+
+            DistributionPoint distributionPoint =
+                    new DistributionPoint(
+                            distributionPointName,
+                            null,
+                            null
+                    );
+
+            CRLDistPoint crlDistPoint =
+                    new CRLDistPoint(
+                            new DistributionPoint[]{distributionPoint}
+                    );
+
+            certGen.addExtension(
+                    Extension.cRLDistributionPoints,
+                    false,
+                    crlDistPoint
+            );
+
             X509CertificateHolder certHolder = certGen.build(contentSigner);
             JcaX509CertificateConverter certConverter = new JcaX509CertificateConverter();
             certConverter = certConverter.setProvider("BC");

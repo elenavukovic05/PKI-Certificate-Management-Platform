@@ -193,6 +193,13 @@ export class CreateCertificatesComponent {
       return;
     }
     const formValue = this.certificateForm.getRawValue();
+    //adjusted because of time zone difference in java date format on server
+    const startDateAdjusted = new Date(formValue.startDate!);
+    startDateAdjusted.setHours(startDateAdjusted.getHours() - 2);
+
+    const endDateAdjusted = new Date(formValue.endDate!);
+    endDateAdjusted.setHours(endDateAdjusted.getHours() - 2);
+
     if (formValue.type === 'ROOT' && !formValue.organizationId) {
       this.errorMessage = 'Please choose organization for ROOT certificate';
       return;
@@ -225,8 +232,10 @@ export class CreateCertificatesComponent {
       email: formValue.email ?? '',
       organizationalUnit: formValue.organizationalUnit ?? '',
       country: formValue.country ?? '',
-      startDate: formValue.startDate ?? '',
-      endDate: formValue.endDate ?? '',
+      //startDate: formValue.startDate ?? '',
+      startDate : startDateAdjusted.toISOString(),
+      //endDate: formValue.endDate ?? '',
+      endDate : endDateAdjusted.toISOString(),
       issuerId: formValue.type === 'ROOT' ? null : formValue.issuerId,
       organizationId: formValue.type === 'ROOT' ? formValue.organizationId : null,
       isCA: formValue.isCA ?? false,

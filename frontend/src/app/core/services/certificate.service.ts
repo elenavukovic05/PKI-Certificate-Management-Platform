@@ -4,6 +4,7 @@ import { AutogenerateRequest, AutogenerateResponse, CACertificatePreviewDTO, Cer
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../env/environment';
 import { OrganizationDTO } from '../models/organization.model';
+import { RevokeCertificateRequestDTO } from '../models/revoke-certificate-request.model';
 
 @Injectable({
   providedIn: 'root'
@@ -22,6 +23,14 @@ export class CertificateService {
 
   createCertificateAsCAUser(dto: CertificateRequestDTO): Observable<string> {
     return this.http.post(`${environment.apiHost}/certificates/ca/create-certificate`, dto, { responseType: 'text' });
+  }
+
+  revokeCertificate(certId: number, dto: RevokeCertificateRequestDTO) {
+    return this.http.put(
+      `${environment.apiHost}/certificates/revoke/${certId}`,
+      dto,
+      { responseType: 'text' }
+    );
   }
 
   getUsers(): Observable<any[]> {

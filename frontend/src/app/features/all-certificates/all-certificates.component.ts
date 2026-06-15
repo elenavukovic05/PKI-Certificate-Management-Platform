@@ -4,6 +4,7 @@
   import { FormsModule, ReactiveFormsModule } from '@angular/forms';
   import { CommonModule } from '@angular/common';
 import { AuthService } from '../../core/services/auth.service';
+import { RevokeCertificateRequestDTO } from '../../core/models/revoke-certificate-request.model';
 
   @Component({
     selector: 'app-all-certificates',
@@ -16,9 +17,11 @@ import { AuthService } from '../../core/services/auth.service';
     constructor(private certificateService : CertificateService, private cdr: ChangeDetectorRef, private authService : AuthService){}
     role: string | null = null;
     errorMessage : string = '';
+    successMessage : string = '';
     certificates : CertificatePreviewDTO[] = [];
-
+    revocationReason = 'UNSPECIFIED';
     showPkcs12Modal = false;
+    showRevokeCertificateModal = false;
     pkcs12Password = '';
     showPassword = false;
     selectedCertId: number | null = null;
@@ -115,5 +118,43 @@ import { AuthService } from '../../core/services/auth.service';
           }
       });
     }
+
+    revokeCertificate(certId : number) : void{
+      this.selectedCertId = certId;
+      this.showRevokeCertificateModal = true;
+      this.cdr.detectChanges();
+    }
+    chooseRevocationReason(){
+      if(!this.selectedCertId)
+        return;
+
+      const dto : RevokeCertificateRequestDTO = {
+        reason : this.revocationReason
+      };
+      this.certificateService.revokeCertificate(this.selectedCertId, dto).subscribe({
+      next: () => {
+        this.successMessage = 'Certificate revoked successfully';
+        this.errorMessage = '';
+        this.showRevokeCertificateModal = false;
+        this.selectedCertId = null;
+        this.revocationReason = 'UNSPECIFIED';
+        this.loadCertificates();
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.log('SERVER ERROR:', err);
+        console.log('SERVER ERROR BODY:', err.error);
+
+        this.errorMessage =
+          typeof err.error === 'string'
+            ? err.error
+            : err.error?.message || err.message || 'Something went wrong';
+
+          this.successMessage = '';
+          this.cdr.detectChanges();
+      }
+    });
+
+  } 
 
   }
