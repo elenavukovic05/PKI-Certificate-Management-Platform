@@ -31,3 +31,10 @@ build/
 
 ### VS Code ###
 .vscode/
+
+*.p12
+*.key
+*.pem
+*.crt
+*.csr
+*.srl
