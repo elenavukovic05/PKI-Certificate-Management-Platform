@@ -11,19 +11,18 @@ import org.springframework.stereotype.Service;
 import pki_project.pki.dto.CACertificatePreviewDTO;
 import pki_project.pki.dto.CertificatePreviewDTO;
 import pki_project.pki.dto.CertificateRequestDTO;
-import pki_project.pki.model.CertificateEntity;
-import pki_project.pki.model.Issuer;
-import pki_project.pki.model.Organization;
-import pki_project.pki.model.Subject;
-import pki_project.pki.model.User;
+import pki_project.pki.dto.RevokeCertificateRequestDTO;
+import pki_project.pki.model.*;
 import pki_project.pki.model.enums.CertificateStatus;
 import pki_project.pki.model.enums.CertificateType;
+import pki_project.pki.repositories.CRLRepository;
 import pki_project.pki.repositories.CertificateRepository;
 import pki_project.pki.repositories.OrganizationRepository;
 import pki_project.pki.repositories.UserRepository;
 
 import java.math.BigInteger;
 import java.security.*;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -48,6 +47,12 @@ public class CertificateService {
 
     @Autowired
     private UserDetailsService userDetailsService;
+
+    @Autowired
+    private CRLService crlService;
+
+    @Autowired
+    private CRLRepository crlRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -83,8 +88,11 @@ public class CertificateService {
 
         SecureRandom random = new SecureRandom();
         BigInteger serialNumber = new BigInteger(64, random);
+
+        //issuer certificate serial number is needed for distribution point extension
+        String crlIssuerSerialNumber = issuerEntity != null ? issuerEntity.getSerialNumber() : serialNumber.toString();
         X509Certificate x509Certificate = certificateGenerator.generateCertificate(subject,issuer,certificateRequest,
-                serialNumber);
+                serialNumber, crlIssuerSerialNumber);
         String encryptedPrivateKey = keyManagementService.encryptPrivateKey(subject.getPrivateKey(), organization);
         String subjectName = subject.getX500Name().toString();
         String pem = certificateToPem(x509Certificate);
@@ -105,6 +113,7 @@ public class CertificateService {
                 pem,
                 encryptedPrivateKey
         );
+
         certificateEntity.setSubjectAlternativeNames(certificateRequest.getSubjectAlternativeNames());
         certificateEntity.setSubjectPublicKey(
             java.util.Base64.getEncoder().encodeToString(subject.getPublicKey().getEncoded())
@@ -123,18 +132,20 @@ public class CertificateService {
         // ##############################
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.isAuthenticated() &&
-                (certificateRequest.getType() == CertificateType.END_ENTITY ||
-                        certificateRequest.getType() == CertificateType.INTERMEDIATE )) {
+        if (auth != null && auth.isAuthenticated()) {
             String username = auth.getName();
             User currentUser = (User) userDetailsService.loadUserByUsername(username);
-            //certificateEntity.setOwner(currentUser)
             User owner = null;
-            if (certificateRequest.getOwnerId() != null){
-                owner = userRepository
-                        .findById(certificateRequest.getOwnerId())
-                        .orElseThrow(() -> new RuntimeException("Owner not found"));
+            if(certificateRequest.getType() != CertificateType.END_ENTITY){
+                owner = currentUser;
+            }else{
+                if (certificateRequest.getOwnerId() != null){
+                    owner = userRepository
+                            .findById(certificateRequest.getOwnerId())
+                            .orElseThrow(() -> new RuntimeException("Owner not found"));
+                }
             }
+
             certificateEntity.setOwner(owner);
             certificateEntity.setCreatedBy(currentUser);
         }
@@ -198,6 +209,57 @@ public class CertificateService {
 
     }
 
+    public void revokeDownwards(CertificateEntity issuer, String reason){
+        List<CertificateEntity> issuedCertificates = certificateRepository.findByIssuerCertificate(issuer);
+        for(CertificateEntity certificate : issuedCertificates){
+            if (certificate.getStatus() != CertificateStatus.REVOKED) {
+                certificate.setStatus(CertificateStatus.REVOKED);
+                certificate.setRevocationReason(reason);
+                certificateRepository.save(certificate);
+            }
+
+            revokeDownwards(certificate, reason);
+        }
+    }
+
+    public CRL getCRL(String caCertificateSerialNumber){
+        System.out.println("SERIAL = " + caCertificateSerialNumber);
+        CertificateEntity certificate = certificateRepository.findBySerialNumber(caCertificateSerialNumber);
+
+        if(certificate == null)
+            throw new RuntimeException("Certificate not found");
+
+        CRL crl = crlRepository.findByCaCertificate(certificate);
+        System.out.println("CRL = " + crl);
+        if(crl == null)
+            throw new RuntimeException("CRL not found");
+        return crl;
+    }
+
+    public void revokeCertificate(Long certificateId, RevokeCertificateRequestDTO dto){
+        CertificateEntity certificate = certificateRepository.findById(certificateId)
+                .orElseThrow(() -> new RuntimeException("Certificate not found"));
+
+        certificate.setStatus(CertificateStatus.REVOKED);
+        certificate.setRevocationReason(dto.getReason().toString());
+        certificateRepository.save(certificate);
+        if(certificate.getType() == CertificateType.INTERMEDIATE || certificate.getType() == CertificateType.ROOT)
+            //revoke all certificates which are issued by this certificate
+            revokeDownwards(certificate, dto.getReason().toString());
+
+        CertificateEntity caCertificate =
+                certificate.getIssuerCertificate() == null
+                        ? certificate
+                        : certificate.getIssuerCertificate();
+
+        List<CertificateEntity> revokedByThisCa =
+                certificateRepository.findByIssuerCertificateAndStatus(
+                        caCertificate,
+                        CertificateStatus.REVOKED
+                );
+
+        crlService.createOrUpdateCRL(caCertificate, revokedByThisCa);
+    }
     public boolean validateCertificateChain(CertificateEntity issuer, Date certificateEndDate){
         try{
             if (issuer == null) {
@@ -284,6 +346,7 @@ public class CertificateService {
             throw new RuntimeException("Failed to parse certificate PEM", e);
         }
     }
+
     public Issuer buildIssuerFromEntity(CertificateEntity issuerEntity, Organization organization){
         PrivateKey issuerPrivateKey = keyManagementService.decryptPrivateKey(issuerEntity.getEncryptedPrivateKey(), organization);
         X500Name x500Name = new X500Name(issuerEntity.getSubjectName());

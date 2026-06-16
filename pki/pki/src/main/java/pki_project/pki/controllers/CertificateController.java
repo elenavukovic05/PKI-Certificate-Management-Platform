@@ -1,4 +1,5 @@
 package pki_project.pki.controllers;
+import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -10,13 +11,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.*;
 
-import pki_project.pki.dto.AutogenerateRequestDTO;
-import pki_project.pki.dto.AutogenerateResponseDTO;
-import pki_project.pki.dto.CACertificatePreviewDTO;
-import pki_project.pki.dto.CertificatePreviewDTO;
-import pki_project.pki.dto.CertificateRequestDTO;
-import pki_project.pki.dto.CsrRequestDTO;
-import pki_project.pki.dto.Pkcs12RequestDTO;
+import pki_project.pki.dto.*;
+import pki_project.pki.model.CRL;
 import pki_project.pki.model.CertificateEntity;
 import pki_project.pki.model.User;
 import pki_project.pki.services.CertificateDownloadService;
@@ -40,6 +36,32 @@ public class CertificateController {
 
     @Autowired
     private CsrService csrService;
+
+    @GetMapping(value = "/crl/{caCertificateSerialNumber}")
+    public ResponseEntity<byte[]> getCRL(@PathVariable String caCertificateSerialNumber){
+        try{
+            CRL crl = certificateService.getCRL(caCertificateSerialNumber);
+            return ResponseEntity.ok()
+                    //without this header, browser tries to open file instead of downloading it
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"crl.der\"")
+                    .header(HttpHeaders.CONTENT_TYPE, "application/pkix-crl")
+                    .body(crl.getCrl());
+        }catch(RuntimeException e){
+            return ResponseEntity.notFound().build();
+        }
+
+    }
+    @PutMapping(value = "/revoke/{certificateId}")
+    public ResponseEntity<String> revokeCertificate( @PathVariable("certificateId") Long certificationId,
+                                                     @RequestBody RevokeCertificateRequestDTO request){
+        try{
+            certificateService.revokeCertificate(certificationId, request);
+            return ResponseEntity.ok("Certificate revoked successfully");
+        }catch (RuntimeException e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+
+    }
 
     @PostMapping(value = "/create-certificate", consumes = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasRole('ADMIN')")
